@@ -2,6 +2,8 @@
 
 # think-tank · 智囊团
 
+[中文版](README.zh-CN.md)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](SKILL.md)
 
