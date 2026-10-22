@@ -3,6 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](SKILL.md)
 
+> **状态 / Status:** active · v1.0.1（见 SKILL.md；尚无 git tag / no git tags yet）· 自测：`demo/eval.sh` 冒烟 PASS + `evals/smoke-01.md` 一次 dry-run PASS；无单元测试 / no unit tests · Part of [vertciti](https://vertciti.com)
+
 **Stop deciding in your head. Put a real pending decision through a structured red/blue/white-team debate — and walk out with a D-numbered decision record you can actually defend.**
 
 [Quick start](#30-second-quick-start) · [What it delivers](#what-it-delivers) · [Demo](#demo) · [FAQ](#faq)
@@ -111,7 +113,13 @@ Issues and PRs welcome. Keep it evidence-based: claims about debate quality need
 
 Debate-organization form inspired by roundtable mechanics (original framework author: 李继刚); reimplemented clean-room per D148 — ideas borrowed, no text copied. The think-tank charter (red/blue/white teams, McKinsey method) is our own.
 
-## License
+## 安全 / Security
+
+发现安全问题请不要开公开 issue，请使用本仓库 **Security** 标签页下的 "Report a vulnerability" 私密上报；流程遵循 HUIIIM 组织默认的 [SECURITY.md](https://github.com/HUIIIM/.github/blob/main/SECURITY.md)（本仓库暂无独立 SECURITY.md）。
+
+Please do not open a public issue for security problems. Use **Security → Report a vulnerability** on this repository; the HUIIIM org-wide default [SECURITY.md](https://github.com/HUIIIM/.github/blob/main/SECURITY.md) applies (this repo has no SECURITY.md of its own).
+
+## 许可证 / License
 
 | Module | License | Plain meaning |
 |---|---|---|
