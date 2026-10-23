@@ -1,132 +1,101 @@
 # think-tank
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.1-blue.svg)](SKILL.md)
+A vertciti skill that runs a real pending decision through a structured red / blue / white-team debate with
+an outside perspective and produces a D-numbered decision record, for founders and operators who make
+strategic or cross-domain calls.
 
-> **状态 / Status:** active · v1.0.1（见 SKILL.md；尚无 git tag / no git tags yet）· 自测：`demo/eval.sh` 冒烟 PASS + `evals/smoke-01.md` 一次 dry-run PASS；无单元测试 / no unit tests · Part of [vertciti](https://vertciti.com)
-
-**Stop deciding in your head. Put a real pending decision through a structured red/blue/white-team debate — and walk out with a D-numbered decision record you can actually defend.**
-
-[Quick start](#30-second-quick-start) · [What it delivers](#what-it-delivers) · [Demo](#demo) · [FAQ](#faq)
-
-Most AI "advice" is one polite voice agreeing with you. think-tank is a [Vertciti Skill Pack](https://vertciti.com) that runs a genuine multi-round dialectic on a real decision: three teams with opposing mandates plus an outside perspective, compressed arguments, a coordinator's ruling, and a CEO verdict — archived as a numbered decision record.
-
-Built for [Miao](https://vertciti.com) (Jiahui Miao) — N=1 founder IP infrastructure.
-
-## The real problem it solves
-
-Big decisions made solo collapse into the founder's first instinct. Think-tank forces the decision through adversarial structure: every perspective must attack and defend, every argument gets one-line compression so fluff can't hide, and a weak proposition can be killed by the fatal-flaw pre-check before it wastes a debate.
-
-## What it delivers
-
-Feed it **a real pending decision** (not an abstract topic, not an exercise) plus background material. One run produces, in order:
-
-1. `Opening definition` — The decidable proposition, defined terms, three verdict options (accept / revise / reject).
-2. `Tension network` — Perspective roster (red / blue / white teams + outside view) with stated positions.
-3. `Dialectic` — ≥2 rounds: per-perspective arguments + one-line compression + host's core dispute + ASCII framework diagram + next-level question.
-4. `Coordinator's ruling` — McKinsey-pyramid verdict: conclusion, consensus, real disagreements with rulings, red-team rebuttals, numbers, open items.
-5. `CEO verdict & decision record` — D-numbered archive (background / positions / recommendation / verdict / basis / review triggers).
-
-A fatal-flaw pre-check can short-circuit weak propositions before debate begins — no ceremony for bad ideas.
-
-## 30-second quick start
-
-```bash
-cd demo
-python3 run.py --topic "Your decision here"
-# Draft lands in demo/output/decision-draft.md
-```
-
-See `demo/README.md` for the minimal runnable slice.
-
-## Demo
-
-A complete worked run ships in the repo:
-
-- `demo/output/decision-draft.md` — full debate record from a real dry-run (opening definition → dialectic with ASCII framework diagrams → coordinator's ruling → CEO verdict)
-- `evals/smoke-01.md` — self-test record: the executor runs the whole five-section pipeline on a genuine pending matter ("trust-rule 式 lasting allow 机制是否排进开发计划"), pass/fail graded against the criteria
-
-> Full run-through recording/screenshot: 待补（占位）——a step-by-step run transcript is planned; the worked output files above are already real and runnable.
-
-## When to use it
-
-| Scenario | What it produces |
+| | |
 |---|---|
-| "Do we adopt this mechanism/route/investment?" | accept / revise / reject verdict with recorded basis |
-| Roadmap tradeoff (A vs B, both wanted) | structured arguments + one-line compressions, no hand-waving |
-| Cross-domain dispute between teams | tension network making each position's logic explicit |
-| Killing a weak proposal early | fatal-flaw pre-check, no ceremony |
+| Status | active — v1.0.1 (version from [SKILL.md](SKILL.md); no git tags yet); self-tests: `demo/eval.sh` smoke check and one dry-run in `evals/smoke-01.md`; no unit tests |
+| Type | vertciti skill (agent skill defined in [SKILL.md](SKILL.md)) |
+| Install / use | Load `SKILL.md` as a skill in your agent; try the zero-dependency demo with `python3 demo/run.py --topic "..."` |
+| Licence | MIT ([LICENSE](LICENSE)), Copyright (c) 2026 Jiahui Miao |
+| Languages | README in English · skill text, references and demo output in 简体中文 |
+| Contact | Security: see [Security](#security) · Product: [vertciti.com](https://vertciti.com) |
 
-## Repo layout
+## Overview
 
-```
-think-tank/
-  SKILL.md      # the skill itself: full debate protocol, input/output contracts
-  demo/         # 30-second runnable slice → demo/output/decision-draft.md
-  references/   # think-tank charter (red/blue/white teams, McKinsey method)
-  evals/        # smoke evaluation with a real dry-run record
-``` The demo output includes a complete worked example (`demo/output/decision-draft.md`) and a self-test record in `evals/smoke-01.md`.
+Decisions made alone tend to follow the first instinct. think-tank puts a decision through an adversarial
+structure: each perspective must argue and answer the others, every argument is compressed to one line, and
+a fatal-flaw pre-check can stop a weak proposition before a debate starts. The input is a real pending
+decision plus background material; the output is an archived decision record with an accept / revise /
+reject verdict and the basis for it.
 
-## How it runs (structure, not decoration)
+Product one-pager: [docs/PRODUCT.md](docs/PRODUCT.md) · Changelog: [CHANGELOG.md](CHANGELOG.md)
+
+## Capabilities
+
+| Stage | What it produces |
+|---|---|
+| Opening definition | The decidable proposition, defined terms, three verdict options (accept / revise / reject) |
+| Tension network | Perspective roster (red / blue / white teams and an outside view) with stated positions |
+| Dialectic | Two or more rounds: arguments per perspective, one-line compression, the host's core dispute, an ASCII framework diagram, the next-level question |
+| Coordinator's ruling | Pyramid-structured recommendation: conclusion, consensus, real disagreements with rulings, red-team rebuttals, open items |
+| CEO verdict and decision record | D-numbered record: background, positions, recommendation, verdict, basis, review triggers |
 
 ```
 Input: decision statement + background material
-  ↓  Gate 0 — single-theme screen (must serve the operating theme)
-  ↓  Fatal-flaw pre-check (weak propositions killed here)
-  ↓  Opening definition → Tension network
-  ↓  Dialectic rounds (≥2, each with ASCII framework diagram)
-  ↓  Coordinator's ruling (McKinsey pyramid)
-  ↓  CEO verdict → D-numbered decision record
+  -> Gate 0: single-theme screen
+  -> Fatal-flaw pre-check (weak propositions stop here)
+  -> Opening definition -> Tension network
+  -> Dialectic rounds (>= 2, each with an ASCII framework diagram)
+  -> Coordinator's ruling
+  -> CEO verdict -> D-numbered decision record
 ```
 
-## Governance
+## Quick start
 
-- **D15**: The chairman's word is advisory — sound advice executes, unsound advice is rejected on the record.
-- **Gate 0**: Every matter must pass the single-theme screen (operating Miao's life) before debate.
-- Not for P0 emergencies (execute first, record within 24h).
+```bash
+git clone https://github.com/HUIIIM/think-tank && cd think-tank
+python3 demo/run.py --topic "Your decision in one sentence"   # writes demo/output/decision-draft.md
+bash demo/eval.sh                                              # prints PASS / FAIL
+```
 
-## Roadmap
+The demo produces a draft skeleton with the five sections, marked as a demo draft. It checks that the chain
+from topic to record runs; it does not measure debate quality. A full dry-run on a real pending matter is
+recorded in [`evals/smoke-01.md`](evals/smoke-01.md).
 
-- Dry-run harness for full debate runs with transcript capture (planned, see `evals/`).
-- Decision-record archive indexing (search across D-numbers by topic/verdict).
-- D148 clean-room doctrine applies to all future revisions: reimplement ideas, never copy text.
+## Repository layout
 
-## FAQ
+```
+SKILL.md      the skill: debate protocol, input and output contracts
+demo/         topic -> demo/output/decision-draft.md (skeleton) + eval.sh
+references/   three-team charter, decision-record template
+evals/        smoke evaluation with one dry-run record
+docs/         product one-pager
+```
 
-**Do I need a "real" decision, or can I test with a toy topic?**
-Toy topics work in `demo/`, but the skill's contract is explicit: real pending decisions only in production. Abstract exercises get no verdict — the whole point is that the verdict is archived and owned.
+## Governance rules (from SKILL.md)
 
-**Who is the "CEO verdict" for?**
-The decision owner. The skill structures the debate; a human (or your operating agent) takes the final call and the D-numbered record proves what was considered.
+- D15: the chairman's input is treated as evidence, not as an instruction; it is executed when sound and
+  rejected on the record when not.
+- Gate 0: every matter passes the single-theme screen before debate.
+- Not for P0 incidents or urgent legal matters: act first, record afterwards.
 
-**Why four perspectives?**
-Red attacks, blue builds, white arbitrates, outside view breaks frame. Three is enough for disagreement; four is where blind spots surface.
+## Status and limitations
 
-**Can this replace urgent incident response?**
-No. Not for P0 emergencies — execute first, record within 24h. Debate is for decisions that benefit from 2 hours of structure, not 2 minutes of action.
-
-## Contributing
-
-Issues and PRs welcome. Keep it evidence-based: claims about debate quality need a worked run in `evals/`, not adjectives.
+- One dry-run evaluation exists; there is no automated measure of debate quality.
+- The demo output is a skeleton, not a full debate.
+- The skill structures the debate; the final call belongs to the decision owner.
 
 ## Credits
 
-Debate-organization form inspired by roundtable mechanics (original framework author: 李继刚); reimplemented clean-room per D148 — ideas borrowed, no text copied. The think-tank charter (red/blue/white teams, McKinsey method) is our own.
+The debate-organisation form draws on roundtable mechanics by 李继刚 (original framework author, as credited
+in `SKILL.md`). It is reimplemented clean-room under internal rule D148: ideas borrowed, no text copied.
 
-## 安全 / Security
+## Security
 
-发现安全问题请不要开公开 issue，请使用本仓库 **Security** 标签页下的 "Report a vulnerability" 私密上报；流程遵循 HUIIIM 组织默认的 [SECURITY.md](https://github.com/HUIIIM/.github/blob/main/SECURITY.md)（本仓库暂无独立 SECURITY.md）。
+Do not open a public issue for security problems. Use **Security → Report a vulnerability** on this
+repository; the HUIIIM organisation default
+[SECURITY.md](https://github.com/HUIIIM/.github/blob/main/SECURITY.md) applies (this repository has no
+SECURITY.md of its own). CI runs gitleaks secret scanning and OpenSSF Scorecard.
 
-Please do not open a public issue for security problems. Use **Security → Report a vulnerability** on this repository; the HUIIIM org-wide default [SECURITY.md](https://github.com/HUIIIM/.github/blob/main/SECURITY.md) applies (this repo has no SECURITY.md of its own).
+## Contributing
 
-## 许可证 / License
+Issues and pull requests are welcome. Claims about debate quality need a worked run in `evals/`.
 
-| Module | License | Plain meaning |
-|---|---|---|
-| All files | MIT | Commercial use OK, modify OK, attribution required |
+## Licence
 
-See [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Copyright (c) 2026 Jiahui Miao.
 
-## Author
-
-**Jiahui Miao** — Founder, [vertciti](https://vertciti.com). Building N=1 personal AI infrastructure. Participates in 3GPP working on 6G core network standards.
+Built by vertciti — https://vertciti.com
