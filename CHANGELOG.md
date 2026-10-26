@@ -1,19 +1,31 @@
 # Changelog / 变更日志
 
 本文件记录本仓库的所有重要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
-仓库尚无 git tag，因此暂不划分版本号区块；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.1`）及其 Changelog 节。
+仓库尚无 git tag，因此暂不划分版本号区块；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.2`）及其 Changelog 节。
 
 All notable changes to this repository are documented here, following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-There are no git tags yet, so entries are grouped by date under `[Unreleased]`; the skill's own version lives in `SKILL.md` (currently `1.0.1`).
+There are no git tags yet, so entries are grouped by date under `[Unreleased]`; the skill's own version lives in `SKILL.md` (currently `1.0.2`).
 
 ## [Unreleased]
 
 ### Added
 - `docs/PRODUCT.md` 产品一页纸 / product one-pager.
 - `CHANGELOG.md`（本文件 / this file）.
-- README：状态行、`## 安全 / Security`、双语 `## 许可证 / License` 标题 / status line, Security section, bilingual License heading.
+- README：状态行、`## Security`、`## Licence` 节 / status line, Security and Licence sections (README is English-only since `2d7bf80`).
+- SKILL.md v1.0.2：第 -2 步"不得代裁闸门"；D15 不覆盖不得代裁四条 / step -2 non-delegable gate; D15 does not override the four non-delegable matter types.
+- CI `Eval` 工作流：每个 push/PR 运行 `demo/eval.sh` / `Eval` workflow runs `demo/eval.sh` on every push and PR.
+
+### Changed
+- `demo/run.py` 节名对齐 SKILL.md 输出契约（`## 总协调裁决书`、`## CEO 终裁与决策记录`），版本号改为 1.0.2（原写 v1.1），新增 `--out` / demo headings match the SKILL.md output contract; version string fixed; `--out` option.
+- `demo/eval.sh` 从 SKILL.md 读取契约节名、输出写临时目录（不再改动仓库文件）、新增换行注入用例 / eval reads contract headings from SKILL.md, writes to a temp dir, adds a newline-injection case.
+- 全部 GitHub Actions 按 commit SHA 固定 / all GitHub Actions pinned by commit SHA.
+- `evals/smoke-01.md` 加复核注记：该议题命中不得代裁第 1 条，PASS 只证明流程可跑 / review note: the topic hits non-delegable rule 1; the PASS only shows the flow runs.
+
+### Removed
+- README（`2d7bf80`）删去了 FAQ、场景表、Roadmap 与录屏占位 / README dropped the FAQ, scenario table, Roadmap and recording placeholder.
 
 ### Fixed
+- `demo/run.py`：议题中的换行被压成空格，用户输入不能再伪造节标题 / newlines in the topic are collapsed so input cannot forge section headings.
 - `gitleaks.yml`：在 `permissions` 中补 `pull-requests: read`，避免 gitleaks-action 在 PR 上 403 / add `pull-requests: read` so gitleaks-action does not 403 on PRs.
 
 ## 2026-10-22

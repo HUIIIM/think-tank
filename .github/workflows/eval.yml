@@ -1,0 +1,19 @@
+# Demo smoke check: demo/eval.sh must PASS on every push and PR. SOTA VER-1.
+name: Eval
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  eval:
+    name: demo/eval.sh
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: bash demo/eval.sh
