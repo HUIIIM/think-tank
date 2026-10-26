@@ -4,7 +4,7 @@
 > 所属：[vertciti](https://vertciti.com) — 一家公司，一个人生。
 
 ## 一句话
-决策负责人（首要是 Miao 本人或其运营 agent）用它把一个**真实待决策事项**交给红/蓝/白三队加意外视角做结构化多轮辩论，得到总协调裁决书、CEO 终裁（接/改/驳）和一份可回溯的 D 编号决策记录。
+决策负责人（首要是 Miao 本人或其运营 agent）用它把一个**真实待决策事项**交给红/蓝/白三队加意外视角做结构化多轮辩论，得到总协调裁决书、CEO 终裁（接/改/驳）和一份可回溯的 编号决策记录。
 
 *English:* A Claude skill that runs a real pending decision through a structured red/blue/white-team debate (plus an outside view) and outputs a coordinator's ruling, a CEO verdict (accept / revise / reject) and a D-numbered decision record.
 
@@ -19,7 +19,7 @@
 ## 怎么用（三步）
 1. 准备输入：决策陈述 + 背景材料（必须是真实待决策事项）；在 Claude 中说"上智囊团"触发 skill。
 2. skill 按 `SKILL.md` 工作流执行：门禁 0 / 致命缺陷预检 → 开场定义 → 张力网络 → ≥2 轮辩证（含一句话压缩与 ASCII 框架图）→ 总协调裁决书。
-3. 决策负责人做 CEO 终裁，存档 D 编号决策记录（模板见 `references/decision-record-template.md`）。
+3. 决策负责人做 CEO 终裁，存档 编号决策记录（模板见 `references/decision-record-template.md`）。
 
 本地 30 秒体验（只生成草稿骨架）：`python3 demo/run.py --topic "你的议题"`，再 `bash demo/eval.sh` 校验 PASS/FAIL。
 
@@ -29,7 +29,7 @@
 | 输入 | 只接真实待决策事项，输出可执行结论（接/改/驳＋谁做＋何时） | 抽象话题讨论 |
 | 结构 | 红/蓝/白三队＋意外视角对抗，每段发言一句话压缩 | 单一声音的建议 |
 | 闭环 | 总协调裁决书 + CEO 终裁是流程必经步骤 | 停在"多角度观点" |
-| 沉淀 | D 编号决策记录，可回溯引用 | 对话结束即丢失 |
+| 沉淀 | 编号决策记录，可回溯引用 | 对话结束即丢失 |
 | 前置过滤 | 致命缺陷预检可在辩论前直接判"驳" | 无 |
 
 （以上来自 `SKILL.md` "与通用 roundtable 的四点区别"，为设计意图描述，未做对比评测。）
@@ -52,7 +52,7 @@
 |---|---|---|
 | Now | 维持 v1.0.1 协议；补全运行录屏/截图（README 占位） | 未确认（TBD） |
 | Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（README Roadmap） | 未确认（TBD） |
-| Later | 决策记录归档索引：按主题/结论检索 D 编号（README Roadmap） | 未确认（TBD） |
+| Later | 决策记录归档索引：按主题/结论检索 记录编号（README Roadmap） | 未确认（TBD） |
 
 所有后续修订遵循 洁净室原则：只借思想，不复制原文。
 
