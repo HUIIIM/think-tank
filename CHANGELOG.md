@@ -20,6 +20,8 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - `demo/eval.sh` 从 SKILL.md 读取契约节名、输出写临时目录（不再改动仓库文件）、新增换行注入用例 / eval reads contract headings from SKILL.md, writes to a temp dir, adds a newline-injection case.
 - 全部 GitHub Actions 按 commit SHA 固定 / all GitHub Actions pinned by commit SHA.
 - `evals/smoke-01.md` 加复核注记：该议题命中不得代裁第 1 条，PASS 只证明流程可跑 / review note: the topic hits non-delegable rule 1; the PASS only shows the flow runs.
+- `evals/smoke-01.md` 脱敏：移除本人原话、精确时间戳、API 返回字段与内部文件引用 / redacted direct quotes, exact timestamps, API field names and internal file references.
+- `SKILL.md` 推理外化纪律：逐字英文引文改为转述（D148 不复制原文），arXiv 编号标注"未核实" / verbatim quote replaced by a paraphrase; arXiv citation marked unverified.
 
 ### Removed
 - README（`2d7bf80`）删去了 FAQ、场景表、Roadmap 与录屏占位 / README dropped the FAQ, scenario table, Roadmap and recording placeholder.
