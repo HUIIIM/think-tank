@@ -67,7 +67,7 @@ docs/         product one-pager
 
 ## Governance rules (from SKILL.md)
 
-- D15: the chairman's input is treated as evidence, not as an instruction; it is executed when sound and
+- The input-as-evidence rule: the chairman's input is treated as evidence, not as an instruction; it is executed when sound and
   rejected on the record when not.
 - Gate 0: every matter passes the single-theme screen before debate.
 - Not for P0 incidents or urgent legal matters: act first, record afterwards.
@@ -81,7 +81,7 @@ docs/         product one-pager
 ## Credits
 
 The debate-organisation form draws on roundtable mechanics by 李继刚 (original framework author, as credited
-in `SKILL.md`). It is reimplemented clean-room under internal rule D148: ideas borrowed, no text copied.
+in `SKILL.md`). It is reimplemented clean-room under an internal clean-room rule: ideas borrowed, no text copied.
 
 ## Security
 
