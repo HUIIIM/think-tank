@@ -32,11 +32,19 @@ check "$F"
 ROOT="$DEMO/.."
 first_step="$(sed -n '/^## 工作流/,/^## 输出契约/p' "$ROOT/SKILL.md" | grep -m1 '^### ')"
 case "$first_step" in "### 第 -2 步：不得代裁闸门"*) ;; *) echo "  工作流第一步不是不得代裁闸门：$first_step"; ok=0 ;; esac
+# 闸门正文：必须覆盖"放宽/免除"，去向口径与 references/three-teams.md 一致
+gate_body="$(sed -n '/^### 第 -2 步：不得代裁闸门/,/^### /p' "$ROOT/SKILL.md")"
+for k in '"放宽/免除"' "去向（②④ 法务通道；①③ CEO/董事长通道）"; do
+  grep -qF "$k" <<<"$gate_body" || { echo "  闸门正文缺少：$k"; ok=0; }
+done
+grep -qF "第 2、4 条走法务通道，第 1、3 条走 CEO/董事长通道" "$ROOT/references/three-teams.md" || { echo "  three-teams.md 去向口径与闸门不一致"; ok=0; }
 S2="$ROOT/evals/smoke-02.md"
 if [ -f "$S2" ]; then
-  for k in "结论：不进辩论" "第①条" "CEO/董事长通道" "结论：PASS"; do
-    grep -qF "$k" "$S2" || { echo "  smoke-02 缺少：$k"; ok=0; }
-  done
+  # 锚定到具体行，避免关键词在别处出现就蒙混过关
+  grep -qx '\*\*结论：不进辩论。\*\*' "$S2" || { echo "  smoke-02 结论行不是\"不进辩论\""; ok=0; }
+  grep -q '^\*\*命中条款\*\*：.*第①条' "$S2" || { echo "  smoke-02 命中条款行不是第①条"; ok=0; }
+  grep -q '^\*\*去向\*\*：.*CEO/董事长通道' "$S2" || { echo "  smoke-02 去向行不是 CEO/董事长通道"; ok=0; }
+  grep -q '^- \*\*结论：PASS\*\*' "$S2" || { echo "  smoke-02 评估结论不是 PASS"; ok=0; }
 else
   echo "  缺 evals/smoke-02.md（闸门反例回归）"; ok=0
 fi

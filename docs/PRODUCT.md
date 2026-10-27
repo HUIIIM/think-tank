@@ -35,7 +35,7 @@
 （以上来自 `SKILL.md` "与通用 roundtable 的四点区别"，为设计意图描述，未做对比评测。）
 
 ## 证据
-- 测试：无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）连同 shellcheck、ruff、`mypy --strict`，由 CI `Eval` 工作流在每个 PR 和推到 main 的 push 上阻断式运行；`evals/smoke-02.md` 是不得代裁闸门的反例回归；另有 gitleaks 与 Scorecard 工作流。
+- 测试：无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）连同 shellcheck、ruff、`mypy --strict`，由 CI `Eval` 工作流在每个 PR 和推到 main 的 push 上运行（设为 main 的必过检查后才真正阻断合并）；`evals/smoke-02.md` 是不得代裁闸门的反例回归；另有 gitleaks 与 Scorecard 工作流。
 - 真实运行：`evals/smoke-01.md` —— 一次真实待决策事项的完整 dry-run 记录（议题："是否把 trust-rule 式 lasting allow 机制排进 10-18 开发计划"），自评结论 PASS，终裁"改"——2026-10-26 复核：该议题命中"不得代裁四条"第 1 条，本不应进辩论，PASS 只证明流程可跑；`demo/output/decision-draft.md` 为 demo 草稿输出。
 - 不能证明的：辩论质量与决策质量的提升没有量化评估；smoke-01 为单次自测、由执行者自评；没有运行录屏/截图。
 

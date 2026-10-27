@@ -19,6 +19,9 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - SKILL.md v1.0.3：闸门移到工作流最前；去向统一为"第 2、4 条走法务通道，第 1、3 条走 CEO/董事长通道"；写清"要不要花钱"可以辩论但只出建议，付款执行属硬保留 / gate moved first; routing unified; spending wording made consistent.
 
 ### Changed
+- `demo/eval.sh` 加固：校验闸门正文的"放宽/免除"条款和去向口径，以及 three-teams.md 口径一致；smoke-02 的结论、命中条款、去向按行锚定 / eval now checks the gate body and routing and anchors smoke-02 checks to specific lines.
+- README / PRODUCT："阻断式"措辞改为如实描述（设为必过检查后才阻断合并）/ "blocking" wording made accurate.
+- `evals/smoke-01.md`：两处带引号的转述去掉引号；注记说明"花钱唯一硬保留"是旧口径 / quote-styled paraphrases unquoted; note on the old spending wording.
 - `demo/run.py` 节名对齐 SKILL.md 输出契约（`## 总协调裁决书`、`## CEO 终裁与决策记录`），版本号改为 1.0.2（原写 v1.1），新增 `--out` / demo headings match the SKILL.md output contract; version string fixed; `--out` option.
 - `demo/eval.sh` 从 SKILL.md 读取契约节名、输出写临时目录（不再改动仓库文件）、新增换行注入用例 / eval reads contract headings from SKILL.md, writes to a temp dir, adds a newline-injection case.
 - 全部 GitHub Actions 按 commit SHA 固定 / all GitHub Actions pinned by commit SHA.
