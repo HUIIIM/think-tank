@@ -1,4 +1,5 @@
-# Blocking checks on every PR and on pushes to main (SOTA VER-1):
+# Checks on every PR and on pushes to main (SOTA VER-1). They block merges only
+# once both jobs are required status checks on main (repo settings).
 # shellcheck + ruff + mypy, then the demo smoke check demo/eval.sh.
 name: Eval
 on:
