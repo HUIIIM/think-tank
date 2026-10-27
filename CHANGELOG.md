@@ -1,10 +1,10 @@
 # Changelog / 变更日志
 
 本文件记录本仓库的所有重要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
-仓库尚无 git tag，因此暂不划分版本号区块；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.2`）及其 Changelog 节。
+仓库尚无 git tag，因此暂不划分版本号区块；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.3`）及其 Changelog 节。
 
 All notable changes to this repository are documented here, following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-There are no git tags yet, so entries are grouped by date under `[Unreleased]`; the skill's own version lives in `SKILL.md` (currently `1.0.2`).
+There are no git tags yet, so entries are grouped by date under `[Unreleased]`; the skill's own version lives in `SKILL.md` (currently `1.0.3`).
 
 ## [Unreleased]
 
@@ -13,14 +13,17 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - `CHANGELOG.md`（本文件 / this file）.
 - README：状态行、`## Security`、`## Licence` 节 / status line, Security and Licence sections (README is English-only since `2d7bf80`).
 - SKILL.md v1.0.2：第 -2 步"不得代裁闸门"；"意见为建议"规则不覆盖不得代裁四条 / step -2 non-delegable gate; the input-as-evidence rule does not override the four non-delegable matter types.
-- CI `Eval` 工作流：每个 push/PR 运行 `demo/eval.sh` / `Eval` workflow runs `demo/eval.sh` on every push and PR.
+- CI `Eval` 工作流：每个 PR 和推到 main 的 push 都运行 `demo/eval.sh` / `Eval` workflow runs `demo/eval.sh` on every PR and on pushes to main.
+- `Eval` 新增阻断式 lint 作业：shellcheck、ruff、`mypy --strict`；工具按 `.github/requirements-lint.txt` 哈希安装 / blocking lint job (shellcheck, ruff, mypy --strict), tools installed with pinned hashes.
+- `evals/smoke-02.md`：不得代裁闸门的反例回归（smoke-01 的议题必须在第 -2 步被拦下），由一个全新会话执行；`demo/eval.sh` 静态检查闸门位于工作流首位且该记录存在 / non-delegable gate regression run; eval checks the gate is the first step and the record exists.
+- SKILL.md v1.0.3：闸门移到工作流最前；去向统一为"第 2、4 条走法务通道，第 1、3 条走 CEO/董事长通道"；写清"要不要花钱"可以辩论但只出建议，付款执行属硬保留 / gate moved first; routing unified; spending wording made consistent.
 
 ### Changed
 - `demo/run.py` 节名对齐 SKILL.md 输出契约（`## 总协调裁决书`、`## CEO 终裁与决策记录`），版本号改为 1.0.2（原写 v1.1），新增 `--out` / demo headings match the SKILL.md output contract; version string fixed; `--out` option.
 - `demo/eval.sh` 从 SKILL.md 读取契约节名、输出写临时目录（不再改动仓库文件）、新增换行注入用例 / eval reads contract headings from SKILL.md, writes to a temp dir, adds a newline-injection case.
 - 全部 GitHub Actions 按 commit SHA 固定 / all GitHub Actions pinned by commit SHA.
 - `evals/smoke-01.md` 加复核注记：该议题命中不得代裁第 1 条，PASS 只证明流程可跑 / review note: the topic hits non-delegable rule 1; the PASS only shows the flow runs.
-- `evals/smoke-01.md` 脱敏：移除本人原话、精确时间戳、API 返回字段与内部文件引用 / redacted direct quotes, exact timestamps, API field names and internal file references.
+- `evals/smoke-01.md` 脱敏：直接引语全部改为转述，移除精确时间戳、API 返回字段与内部文件引用（更早的提交历史中仍有原文） / redacted direct quotes, exact timestamps, API field names and internal file references.
 - `SKILL.md` 推理外化纪律：逐字英文引文改为转述（洁净室规则：不复制原文），arXiv 编号标注"未核实" / verbatim quote replaced by a paraphrase; arXiv citation marked unverified.
 
 ### Removed
