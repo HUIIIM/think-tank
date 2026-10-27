@@ -17,7 +17,9 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 ### Changed
 - SKILL.md v1.0.4：frontmatter 对齐 Agent Skills 规范（自定义字段移入 `metadata`，触发词与英文摘要写进 `description`）；arXiv 2609.26637 引用改为已核实表述（独立评估 #8 已核对标题与出处）；协议步骤不变 / spec-valid frontmatter; arXiv citation verified; protocol unchanged.
 - `demo/run.py`：三队标签与 SKILL.md 一致（红＝质疑/风险、蓝＝价值/用户、白＝工程/执行），补意外视角与一句话压缩占位，版本号从 SKILL.md 读取 / team labels match SKILL.md, outside-view seat added, version read from SKILL.md.
-- `demo/eval.sh` 增加意外视角与版本号断言 / eval asserts the outside-view seat and version.
+- `demo/eval.sh`：四个席位标签从 SKILL.md 第 1 步抽取并在张力网络节内逐字比对；版本号必须等于 SKILL.md `metadata.version` / eval checks the four seat labels against SKILL.md inside the tension-network section, and the version equals `metadata.version`.
+- `scripts/validate_skill.py`：name 整串匹配（拒绝尾随换行）、检查 compatibility/license/allowed-tools 类型、扫描 scripts/assets 引用、拒绝重复键 / stricter validator.
+- `demo/run.py`：议题中的非法 UTF-8 字节替换为 U+FFFD，不再崩溃 / invalid UTF-8 in the topic no longer crashes.
 
 ### Removed
 - 已提交的 `demo/output/decision-draft.md` / the committed demo output.
@@ -25,7 +27,7 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 ### 评估依据 / Evidence
 - 独立评估 SOTA 评分卡 #8 路线图第 1–3 项及第 10 项部分 / roadmap items 1–3 and part of 10 in #8.
 
-### 此前已合并或在 PR #10 中、尚未发版 / earlier merged or in PR #10, unreleased (PR #2, #4, #5, #6, #10)
+### 此前已合并、尚未发版 / earlier merged, unreleased (PR #2, #4, #5, #6, #10)
 #### Added
 - `docs/PRODUCT.md` 产品一页纸 / product one-pager.
 - `CHANGELOG.md`（本文件 / this file）.

@@ -14,13 +14,32 @@ SECTIONS=()
 while IFS= read -r line; do SECTIONS+=("$line"); done < <(sed -n '/^## 输出契约/,/^## 不适用/p' "$DEMO/../SKILL.md" | sed -n 's/^[0-9]\. `\(## [^`]*\)`.*/\1/p')
 [ "${#SECTIONS[@]}" = 5 ] || { echo "FAIL: 未能从 SKILL.md 读出 5 个契约节名（读到 ${#SECTIONS[@]} 个）"; exit 1; }
 
+# 席位标签与版本号：从 SKILL.md 抽取（第 1 步的 "红队（质疑/风险视角）" 等四个席位；frontmatter metadata.version）
+LABELS=()
+while IFS= read -r line; do LABELS+=("$line"); done < <(python3 - "$DEMO/../SKILL.md" <<'PY'
+import re, sys
+t = open(sys.argv[1], encoding="utf-8").read()
+step = t.split("### 第 1 步", 1)[1].split("### 第 2 步", 1)[0]
+for name, role in re.findall(r"^- \*\*(.+?)\*\*（(.+?)）", step, re.MULTILINE):
+    print(name if name == "意外视角" else f"{name}（{role}）")
+PY
+)
+[ "${#LABELS[@]}" = 4 ] || { echo "FAIL: 未能从 SKILL.md 第 1 步读出 4 个席位（读到 ${#LABELS[@]} 个）"; exit 1; }
+VERSION="$(python3 -c 'import re,sys; m=re.search(r"^  version: *\"?([^\"\n]+)\"?$", open(sys.argv[1],encoding="utf-8").read().split("\n---",1)[0], re.M); print(m.group(1) if m else "")' "$DEMO/../SKILL.md")"
+[ -n "$VERSION" ] || { echo "FAIL: 未能从 SKILL.md 读出 metadata.version"; exit 1; }
+
 check() {  # 每个契约节必须恰好出现一次（锚定整行）
   for s in "${SECTIONS[@]}"; do
     [ "$(grep -cxF "$s" "$1")" = 1 ] || { echo "  缺节或重复：$s"; ok=0; }
   done
   grep -q "DEMO DRAFT" "$1" || { echo "  缺 DEMO DRAFT 标注"; ok=0; }
-  grep -q "^- 意外视角" "$1" || { echo "  张力网络缺意外视角"; ok=0; }
-  grep -q "think-tank v[0-9]" "$1" || { echo "  版本号未从 SKILL.md 读出"; ok=0; }
+  # 张力网络：四个席位的标签必须与 SKILL.md 第 1 步逐字一致（含意外视角），且只在本节里找
+  net="$(sed -n '/^## 张力网络/,/^## /p' "$1")"
+  for lab in "${LABELS[@]}"; do
+    grep -qF -- "- $lab" <<<"$net" || { echo "  张力网络缺席位或标签不符：$lab"; ok=0; }
+  done
+  # 版本号必须等于 SKILL.md metadata.version，不只是"有个数字"
+  grep -qF "think-tank v$VERSION（" "$1" || { echo "  版本号不等于 SKILL.md metadata.version（$VERSION）"; ok=0; }
 }
 
 python3 "$DEMO/run.py" --out "$TMP" --topic "demo 议题：是否把 Skill Pack demo 纳入 skill 上架门禁" >/dev/null || { echo "FAIL: run.py 执行失败"; exit 1; }

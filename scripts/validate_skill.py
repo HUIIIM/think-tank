@@ -12,6 +12,27 @@ from pathlib import Path
 
 import yaml
 
+
+class _UniqueKeyLoader(yaml.SafeLoader):
+    """SafeLoader that rejects duplicate mapping keys instead of keeping the last."""
+
+
+def _construct_mapping(
+    loader: yaml.SafeLoader, node: yaml.MappingNode
+) -> dict[object, object]:
+    keys = [k.value for k, _ in node.value if isinstance(k, yaml.ScalarNode)]
+    dupes = sorted({str(k) for k in keys if keys.count(k) > 1})
+    if dupes:
+        raise yaml.constructor.ConstructorError(
+            None, None, f"duplicate key(s): {', '.join(dupes)}", node.start_mark
+        )
+    return loader.construct_mapping(node)
+
+
+_UniqueKeyLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_mapping
+)
+
 ALLOWED = {
     "name",
     "description",
@@ -20,7 +41,7 @@ ALLOWED = {
     "metadata",
     "allowed-tools",
 }
-NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
+NAME_RE = re.compile(r"[a-z0-9]+(-[a-z0-9]+)*")
 
 
 def main(root: Path) -> int:
@@ -31,7 +52,11 @@ def main(root: Path) -> int:
     if not m:
         print("ERROR: no YAML frontmatter")
         return 1
-    fm = yaml.safe_load(m.group(1))
+    try:
+        fm = yaml.load(m.group(1), Loader=_UniqueKeyLoader)
+    except yaml.YAMLError as e:
+        print(f"ERROR: frontmatter YAML: {e}")
+        return 1
     body = m.group(2)
     if not isinstance(fm, dict):
         print("ERROR: frontmatter is not a mapping")
@@ -43,7 +68,7 @@ def main(root: Path) -> int:
             f"unexpected frontmatter key(s): {', '.join(extra)}; allowed: {sorted(ALLOWED)}"
         )
     name = fm.get("name", "")
-    if not (isinstance(name, str) and 1 <= len(name) <= 64 and NAME_RE.match(name)):
+    if not (isinstance(name, str) and 1 <= len(name) <= 64 and NAME_RE.fullmatch(name)):
         errors.append(
             f"name {name!r} must be 1-64 chars, lowercase a-z, 0-9 and single hyphens"
         )
@@ -52,6 +77,14 @@ def main(root: Path) -> int:
         errors.append(
             f"description must be 1-1024 chars (got {len(desc) if isinstance(desc, str) else 'non-string'})"
         )
+    if "compatibility" in fm and not (
+        isinstance(fm["compatibility"], str) and 1 <= len(fm["compatibility"]) <= 500
+    ):
+        errors.append("compatibility must be a 1-500 char string")
+    if "license" in fm and not isinstance(fm["license"], str):
+        errors.append("license must be a string")
+    if "allowed-tools" in fm and not isinstance(fm["allowed-tools"], str):
+        errors.append("allowed-tools must be a space-separated string")
     meta = fm.get("metadata", {})
     if meta is not None and not (
         isinstance(meta, dict)
@@ -64,13 +97,17 @@ def main(root: Path) -> int:
         errors.append(f"SKILL.md body is {lines} lines; keep it under 500")
 
     for ref in sorted(
-        set(re.findall(r"`((?:references|demo|evals|docs)/[^`\s]+)`", body))
+        set(
+            re.findall(
+                r"`((?:references|demo|evals|docs|scripts|assets)/[^`\s]+)`", body
+            )
+        )
     ):
         if not (root / ref).exists():
             errors.append(f"referenced file missing: {ref}")
 
-    for e in errors:
-        print("ERROR:", e)
+    for err in errors:
+        print("ERROR:", err)
     if not errors:
         print(
             f"OK: SKILL.md valid (name={name}, description {len(desc)} chars, body {lines} lines)"

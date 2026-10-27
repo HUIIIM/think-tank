@@ -30,7 +30,10 @@ ap.add_argument(
 a = ap.parse_args()
 
 # 议题压成一行：换行会让用户输入伪造出 "## 终裁" 之类的节标题
-topic = " ".join(a.topic.split())
+# 非法 UTF-8 字节（argv 中的代理字符）替换为 U+FFFD，避免写文件时崩溃
+topic = " ".join(
+    a.topic.encode("utf-8", "surrogateescape").decode("utf-8", "replace").split()
+)
 if not topic:
     sys.exit("--topic 不能为空")
 
