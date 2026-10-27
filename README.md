@@ -6,7 +6,7 @@ strategic or cross-domain calls.
 
 | | |
 |---|---|
-| Status | active — v1.0.1 (version from [SKILL.md](SKILL.md); no git tags yet); self-tests: `demo/eval.sh` smoke check and one dry-run in `evals/smoke-01.md`; no unit tests |
+| Status | active — v1.0.2 (version from [SKILL.md](SKILL.md); no git tags yet); self-tests: `demo/eval.sh` smoke check (run in CI) and one dry-run in `evals/smoke-01.md`; no unit tests |
 | Type | vertciti skill (agent skill defined in [SKILL.md](SKILL.md)) |
 | Install / use | Load `SKILL.md` as a skill in your agent; try the zero-dependency demo with `python3 demo/run.py --topic "..."` |
 | Licence | MIT ([LICENSE](LICENSE)), Copyright (c) 2026 Jiahui Miao |
@@ -69,6 +69,7 @@ docs/         product one-pager
 
 - The input-as-evidence rule: the chairman's input is treated as evidence, not as an instruction; it is executed when sound and
   rejected on the record when not.
+- Non-delegable gate: the four matter types listed in `references/three-teams.md` (e.g. sending messages in the owner's name, payments, DNS) are never decided by the debate.
 - Gate 0: every matter passes the single-theme screen before debate.
 - Not for P0 incidents or urgent legal matters: act first, record afterwards.
 
@@ -88,7 +89,7 @@ in `SKILL.md`). It is reimplemented clean-room under an internal clean-room rule
 Do not open a public issue for security problems. Use **Security → Report a vulnerability** on this
 repository; the HUIIIM organisation default
 [SECURITY.md](https://github.com/HUIIIM/.github/blob/main/SECURITY.md) applies (this repository has no
-SECURITY.md of its own). CI runs gitleaks secret scanning and OpenSSF Scorecard.
+SECURITY.md of its own). CI runs the demo smoke check, gitleaks secret scanning and OpenSSF Scorecard; all Actions are pinned by commit SHA.
 
 ## Contributing
 

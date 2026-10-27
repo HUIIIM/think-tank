@@ -1,6 +1,6 @@
 # think-tank（智囊团辩证决策）— 产品一页纸
 
-> 状态：active · 版本：1.0.1（`SKILL.md` frontmatter；尚无 git tag）· 更新：2026-10-22
+> 状态：active · 版本：1.0.2（`SKILL.md` frontmatter；尚无 git tag）· 更新：2026-10-26
 > 所属：[vertciti](https://vertciti.com) — 一家公司，一个人生。
 
 ## 一句话
@@ -9,7 +9,7 @@
 *English:* A Claude skill that runs a real pending decision through a structured red/blue/white-team debate (plus an outside view) and outputs a coordinator's ruling, a CEO verdict (accept / revise / reject) and a D-numbered decision record.
 
 ## 解决什么问题
-- 痛点：独自做重大决策时容易滑向第一直觉；普通 AI 建议往往是"一个附和你的声音"（README "The real problem it solves"）。频率与代价：未确认（TBD）。
+- 痛点：独自做重大决策时容易滑向第一直觉；普通 AI 建议往往是"一个附和你的声音"（README Overview）。频率与代价：未确认（TBD）。
 - 现在的替代做法：在脑中自行权衡，或向单一 AI 对话求建议；缺少对抗结构、论点压缩和存档，事后无法回溯"当时为什么这么选"。
 
 ## 给谁
@@ -35,9 +35,9 @@
 （以上来自 `SKILL.md` "与通用 roundtable 的四点区别"，为设计意图描述，未做对比评测。）
 
 ## 证据
-- 测试：无单元测试、无 CI 测试任务。`demo/eval.sh` 冒烟检查（生成草稿并校验五节齐全）于 2026-10-22 本地运行结果为 `PASS`。CI 仅有 gitleaks 与 Scorecard 工作流。
-- 真实运行：`evals/smoke-01.md` —— 一次真实待决策事项的完整 dry-run 记录（议题："是否把 trust-rule 式 lasting allow 机制排进 10-18 开发计划"），自评结论 PASS，终裁"改"；`demo/output/decision-draft.md` 为 demo 草稿输出。
-- 不能证明的：辩论质量与决策质量的提升没有量化评估；smoke-01 为单次自测、由执行者自评；README 中的运行录屏/截图仍为占位（待补）。`demo/run.py` 草稿模板内写有"think-tank v1.1"，与 `SKILL.md` 的 `1.0.1` 不一致，未确认以哪个为准。
+- 测试：无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）由 CI `Eval` 工作流在每个 push/PR 上运行；另有 gitleaks 与 Scorecard 工作流。
+- 真实运行：`evals/smoke-01.md` —— 一次真实待决策事项的完整 dry-run 记录（议题："是否把 trust-rule 式 lasting allow 机制排进 10-18 开发计划"），自评结论 PASS，终裁"改"——2026-10-26 复核：该议题命中"不得代裁四条"第 1 条，本不应进辩论，PASS 只证明流程可跑；`demo/output/decision-draft.md` 为 demo 草稿输出。
+- 不能证明的：辩论质量与决策质量的提升没有量化评估；smoke-01 为单次自测、由执行者自评；没有运行录屏/截图。
 
 ## 边界与风险
 - 不做：P0 紧急事项、纯执行层事项、事实不清且无最低证据基线的议题（打回研究）、门禁 0 不过的议题。
@@ -50,9 +50,9 @@
 ## 路线图
 | 阶段 | 内容 | 退出标准 |
 |---|---|---|
-| Now | 维持 v1.0.1 协议；补全运行录屏/截图（README 占位） | 未确认（TBD） |
-| Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（README Roadmap） | 未确认（TBD） |
-| Later | 决策记录归档索引：按主题/结论检索 记录编号（README Roadmap） | 未确认（TBD） |
+| Now | 维持 v1.0.2 协议；补一次命中"不得代裁四条"的反例 dry-run | 未确认（TBD） |
+| Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
+| Later | 决策记录归档索引：按主题/结论检索 记录编号（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 
 所有后续修订遵循 洁净室原则：只借思想，不复制原文。
 
