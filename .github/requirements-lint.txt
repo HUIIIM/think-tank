@@ -1,0 +1,14 @@
+# Lint / typecheck tools for the Eval workflow (python 3.12, linux x86_64).
+# Installed with --require-hashes (SOTA SEC-A5). Regenerate hashes when bumping.
+ruff==0.6.9 \
+    --hash=sha256:a67267654edc23c97335586774790cde402fb6bbdb3c2314f1fc087dee320bfa
+mypy==1.11.2 \
+    --hash=sha256:6e7184632d89d677973a14d00ae4d03214c8bc301ceefcdaf5c474866814c987
+mypy-extensions==1.1.0 \
+    --hash=sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505
+typing-extensions==4.16.0 \
+    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
+pyyaml==6.0.3 \
+    --hash=sha256:ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc
+types-pyyaml==6.0.12.20250915 \
+    --hash=sha256:e7d4d9e064e89a3b3cae120b4990cd370874d2bf12fa5f46c97018dd5d3c9ab6
