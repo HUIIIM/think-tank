@@ -1,6 +1,6 @@
 # think-tank（智囊团辩证决策）— 产品一页纸
 
-> 状态：active · 版本：1.0.2（`SKILL.md` frontmatter；尚无 git tag）· 更新：2026-10-26
+> 状态：active · 版本：1.0.3（`SKILL.md` frontmatter；尚无 git tag）· 更新：2026-10-27
 > 所属：[vertciti](https://vertciti.com) — 一家公司，一个人生。
 
 ## 一句话
@@ -35,7 +35,7 @@
 （以上来自 `SKILL.md` "与通用 roundtable 的四点区别"，为设计意图描述，未做对比评测。）
 
 ## 证据
-- 测试：无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）由 CI `Eval` 工作流在每个 push/PR 上运行；另有 gitleaks 与 Scorecard 工作流。
+- 测试：无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）连同 shellcheck、ruff、`mypy --strict`，由 CI `Eval` 工作流在每个 PR 和推到 main 的 push 上阻断式运行；`evals/smoke-02.md` 是不得代裁闸门的反例回归；另有 gitleaks 与 Scorecard 工作流。
 - 真实运行：`evals/smoke-01.md` —— 一次真实待决策事项的完整 dry-run 记录（议题："是否把 trust-rule 式 lasting allow 机制排进 10-18 开发计划"），自评结论 PASS，终裁"改"——2026-10-26 复核：该议题命中"不得代裁四条"第 1 条，本不应进辩论，PASS 只证明流程可跑；`demo/output/decision-draft.md` 为 demo 草稿输出。
 - 不能证明的：辩论质量与决策质量的提升没有量化评估；smoke-01 为单次自测、由执行者自评；没有运行录屏/截图。
 
@@ -50,7 +50,7 @@
 ## 路线图
 | 阶段 | 内容 | 退出标准 |
 |---|---|---|
-| Now | 维持 v1.0.2 协议；补一次命中"不得代裁四条"的反例 dry-run | 未确认（TBD） |
+| Now | 维持 v1.0.3 协议；把 `Eval` 设为 main 的必过检查 | 未确认（TBD） |
 | Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 | Later | 决策记录归档索引：按主题/结论检索 记录编号（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 

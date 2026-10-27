@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """think-tank demo: 输入议题 -> 编号决策记录草稿骨架（最小可运行切片）。"""
-import argparse, os, sys
+import argparse
+import os
+import sys
 from datetime import datetime, timezone
 
 DEMO = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +21,7 @@ draft = f"""# 决策记录草稿 [DEMO DRAFT·不进正式决策日志]
 
 - 议题：{topic}
 - 时间：{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}
-- 流程：think-tank v1.0.2（demo 级：单轮骨架）
+- 流程：think-tank v1.0.3（demo 级：单轮骨架）
 
 ## 开场定义
 - 命题是否真实待决策：[过/不过＋一句话证据]

@@ -6,7 +6,7 @@ strategic or cross-domain calls.
 
 | | |
 |---|---|
-| Status | active — v1.0.2 (version from [SKILL.md](SKILL.md); no git tags yet); self-tests: `demo/eval.sh` smoke check (run in CI) and one dry-run in `evals/smoke-01.md`; no unit tests |
+| Status | active — v1.0.3 (version from [SKILL.md](SKILL.md); no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy (all blocking in CI), dry-runs in `evals/smoke-01.md` and `evals/smoke-02.md` (non-delegable gate); no unit tests |
 | Type | vertciti skill (agent skill defined in [SKILL.md](SKILL.md)) |
 | Install / use | Load `SKILL.md` as a skill in your agent; try the zero-dependency demo with `python3 demo/run.py --topic "..."` |
 | Licence | MIT ([LICENSE](LICENSE)), Copyright (c) 2026 Jiahui Miao |
@@ -69,7 +69,7 @@ docs/         product one-pager
 
 - The input-as-evidence rule: the chairman's input is treated as evidence, not as an instruction; it is executed when sound and
   rejected on the record when not.
-- Non-delegable gate: the four matter types listed in `references/three-teams.md` (e.g. sending messages in the owner's name, payments, DNS) are never decided by the debate.
+- Non-delegable gate: matters in the four categories listed in `references/three-teams.md` (the chairman's reserved matters such as payments, signatures, messages sent in the owner's name and DNS changes; compliance vetoes; major strategic or organisational changes; external legal commitments) are never decided by the debate. `evals/smoke-02.md` is the regression run.
 - Gate 0: every matter passes the single-theme screen before debate.
 - Not for P0 incidents or urgent legal matters: act first, record afterwards.
 
