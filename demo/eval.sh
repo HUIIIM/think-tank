@@ -18,6 +18,8 @@ check() {  # 每个契约节必须恰好出现一次（锚定整行）
     [ "$(grep -cxF "$s" "$1")" = 1 ] || { echo "  缺节或重复：$s"; ok=0; }
   done
   grep -q "DEMO DRAFT" "$1" || { echo "  缺 DEMO DRAFT 标注"; ok=0; }
+  grep -q "^- 意外视角" "$1" || { echo "  张力网络缺意外视角"; ok=0; }
+  grep -q "think-tank v[0-9]" "$1" || { echo "  版本号未从 SKILL.md 读出"; ok=0; }
 }
 
 python3 "$DEMO/run.py" --out "$TMP" --topic "demo 议题：是否把 Skill Pack demo 纳入 skill 上架门禁" >/dev/null || { echo "FAIL: run.py 执行失败"; exit 1; }

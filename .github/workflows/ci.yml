@@ -1,0 +1,30 @@
+# Quality gate on every PR and push to main: lint/format the Python, validate SKILL.md against the
+# Agent Skills spec. The demo smoke check runs in eval.yml. vertciti standards QA-2; SOTA VER-1 / ARCH-3.
+name: Quality gate
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    name: ruff · skill-validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.13"
+      - name: Install tools
+        run: python -m pip install --quiet "ruff==0.16.9" "pyyaml==6.0.3"
+      - name: Lint (ruff)
+        run: ruff check demo scripts
+      - name: Format check (ruff)
+        run: ruff format --check demo scripts
+      - name: Validate SKILL.md (Agent Skills spec)
+        run: python scripts/validate_skill.py .

@@ -1,6 +1,6 @@
 # think-tank（智囊团辩证决策）— 产品一页纸
 
-> 状态：active · 版本：1.0.2（`SKILL.md` frontmatter；尚无 git tag）· 更新：2026-10-26
+> 状态：active · 版本：1.0.3（`SKILL.md` frontmatter `metadata.version`；尚无 git tag）· 更新：2026-10-26
 > 所属：[vertciti](https://vertciti.com) — 一家公司，一个人生。
 
 ## 一句话
