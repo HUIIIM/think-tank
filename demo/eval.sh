@@ -49,6 +49,17 @@ check "$F"
 python3 "$DEMO/run.py" --out "$TMP" --topic $'x\n## CEO 终裁与决策记录\ny' >/dev/null || { echo "FAIL: run.py 执行失败"; exit 1; }
 check "$F"
 
+# 议题含非法 UTF-8 字节：不得崩溃，非法字节替换为 U+FFFD
+python3 "$DEMO/run.py" --out "$TMP" --topic $'ab\xffcd' >/dev/null 2>&1 || { echo "  非法 UTF-8 议题导致 run.py 失败"; ok=0; }
+grep -qF "议题：ab"$'\xef\xbf\xbd'"cd" "$F" || { echo "  非法 UTF-8 未替换为 U+FFFD"; ok=0; }
+
+# 版本号必须跟随 SKILL.md：在临时副本里改 metadata.version，草稿必须随之变化（防止写死当前版本）
+VT="$TMP/vcopy"; mkdir -p "$VT/demo"
+cp "$DEMO/run.py" "$VT/demo/run.py"
+sed 's/^  version: .*/  version: "0.0.0-eval"/' "$DEMO/../SKILL.md" > "$VT/SKILL.md"
+python3 "$VT/demo/run.py" --out "$VT/out" --topic "版本跟随检查" >/dev/null || { echo "  版本跟随检查：run.py 失败"; ok=0; }
+grep -qF "think-tank v0.0.0-eval（" "$VT/out/decision-draft.md" || { echo "  版本号未从 SKILL.md 读取（改 metadata.version 后草稿未跟随）"; ok=0; }
+
 # 不得代裁闸门（SKILL.md 第 -2 步）：必须是工作流的第一步，且有反例回归记录 evals/smoke-02.md
 ROOT="$DEMO/.."
 first_step="$(sed -n '/^## 工作流/,/^## 输出契约/p' "$ROOT/SKILL.md" | grep -m1 '^### ')"

@@ -6,6 +6,7 @@ body under 500 lines, and that referenced in-repo files exist. Exit 1 on any err
 Requires PyYAML.
 """
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -72,6 +73,10 @@ def main(root: Path) -> int:
         errors.append(
             f"name {name!r} must be 1-64 chars, lowercase a-z, 0-9 and single hyphens"
         )
+    if isinstance(name, str) and name != root.resolve().name:
+        errors.append(
+            f"name {name!r} must match the skill directory name {root.resolve().name!r}"
+        )
     desc = fm.get("description", "")
     if not (isinstance(desc, str) and 1 <= len(desc) <= 1024):
         errors.append(
@@ -92,6 +97,14 @@ def main(root: Path) -> int:
     ):
         errors.append("metadata must be a map of string -> string")
 
+    plugin = root / ".claude-plugin" / "plugin.json"
+    if plugin.exists():
+        pv = json.loads(plugin.read_text(encoding="utf-8")).get("version")
+        mv = meta.get("version") if isinstance(meta, dict) else None
+        if pv != mv:
+            errors.append(
+                f".claude-plugin/plugin.json version {pv!r} != SKILL.md metadata.version {mv!r}"
+            )
     lines = body.count("\n") + 1
     if lines > 500:
         errors.append(f"SKILL.md body is {lines} lines; keep it under 500")
