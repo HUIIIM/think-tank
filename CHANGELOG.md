@@ -12,7 +12,7 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - `docs/PRODUCT.md` 产品一页纸 / product one-pager.
 - `CHANGELOG.md`（本文件 / this file）.
 - README：状态行、`## Security`、`## Licence` 节 / status line, Security and Licence sections (README is English-only since `2d7bf80`).
-- SKILL.md v1.0.2：第 -2 步"不得代裁闸门"；D15 不覆盖不得代裁四条 / step -2 non-delegable gate; D15 does not override the four non-delegable matter types.
+- SKILL.md v1.0.2：第 -2 步"不得代裁闸门"；"意见为建议"规则不覆盖不得代裁四条 / step -2 non-delegable gate; the input-as-evidence rule does not override the four non-delegable matter types.
 - CI `Eval` 工作流：每个 push/PR 运行 `demo/eval.sh` / `Eval` workflow runs `demo/eval.sh` on every push and PR.
 
 ### Changed
@@ -21,7 +21,7 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - 全部 GitHub Actions 按 commit SHA 固定 / all GitHub Actions pinned by commit SHA.
 - `evals/smoke-01.md` 加复核注记：该议题命中不得代裁第 1 条，PASS 只证明流程可跑 / review note: the topic hits non-delegable rule 1; the PASS only shows the flow runs.
 - `evals/smoke-01.md` 脱敏：移除本人原话、精确时间戳、API 返回字段与内部文件引用 / redacted direct quotes, exact timestamps, API field names and internal file references.
-- `SKILL.md` 推理外化纪律：逐字英文引文改为转述（D148 不复制原文），arXiv 编号标注"未核实" / verbatim quote replaced by a paraphrase; arXiv citation marked unverified.
+- `SKILL.md` 推理外化纪律：逐字英文引文改为转述（洁净室规则：不复制原文），arXiv 编号标注"未核实" / verbatim quote replaced by a paraphrase; arXiv citation marked unverified.
 
 ### Removed
 - README（`2d7bf80`）删去了 FAQ、场景表、Roadmap 与录屏占位 / README dropped the FAQ, scenario table, Roadmap and recording placeholder.

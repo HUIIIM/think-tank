@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""think-tank demo: 输入议题 -> D 编号决策记录草稿骨架（最小可运行切片）。"""
+"""think-tank demo: 输入议题 -> 编号决策记录草稿骨架（最小可运行切片）。"""
 import argparse, os, sys
 from datetime import datetime, timezone
 
