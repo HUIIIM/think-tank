@@ -215,17 +215,17 @@ CASES: list[tuple[str, Mutation, str]] = [
 
 
 def unquote_version(root: Path) -> None:
-    """`version: 1.0.4` (unquoted) is still a YAML string, so it must validate."""
+    """`version: 1.0.4` (unquoted) is still a YAML string, so it must validate.
+
+    A no-op when SKILL.md already has it unquoted, so the suite keeps working after that edit.
+    """
     p = root / "SKILL.md"
-    text, n = re.subn(
-        r'^(  version: )"([^"\n]+)"$',
-        r"\1\2",
-        p.read_text(encoding="utf-8"),
-        count=1,
-        flags=re.M,
-    )
+    text = p.read_text(encoding="utf-8")
+    if re.search(r'^  version: [^"\n]+$', text, flags=re.M):
+        return
+    text, n = re.subn(r'^(  version: )"([^"\n]+)"$', r"\1\2", text, count=1, flags=re.M)
     if n != 1:
-        raise RuntimeError("no quoted metadata.version to unquote")
+        raise RuntimeError("metadata.version not found")
     p.write_text(text, encoding="utf-8")
 
 
