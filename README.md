@@ -58,11 +58,13 @@ recorded in [`evals/smoke-01.md`](evals/smoke-01.md).
 ## Repository layout
 
 ```
-SKILL.md      the skill: debate protocol, input and output contracts
-demo/         topic -> demo/output/decision-draft.md (skeleton) + eval.sh
-references/   three-team charter, decision-record template
-evals/        smoke evaluation with one dry-run record
-docs/         product one-pager
+SKILL.md         the skill: debate protocol, input and output contracts
+demo/            topic -> demo/output/decision-draft.md (skeleton, git-ignored) + eval.sh
+references/      three-team charter, decision-record template
+evals/           dry-run records: smoke-01 (full debate), smoke-02 (non-delegable gate)
+docs/            product one-pager
+scripts/         validate_skill.py (Agent Skills spec check) + test_validate_skill.py (fixtures)
+.claude-plugin/  plugin.json, so the repo installs as a single-skill Claude Code plugin
 ```
 
 ## Governance rules (from SKILL.md)

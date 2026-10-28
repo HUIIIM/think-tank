@@ -115,7 +115,7 @@ CASES: list[tuple[str, Mutation, str]] = [
     ),
     (
         "non-string metadata value",
-        sub_skill(r'^  version: "([^"]+)"$', r"  version: 1.5"),
+        sub_skill(r'^  version: "?([^"\n]+)"?$', r"  version: 1.5"),
         "metadata must be a map of string",
     ),
     (
@@ -155,6 +155,31 @@ CASES: list[tuple[str, Mutation, str]] = [
     ),
     ("body of exactly 501 lines", body_exactly(501), "SKILL.md body is 501 lines"),
     (
+        "name with leading hyphen",
+        sub_skill(r"^name: think-tank$", "name: -think-tank"),
+        "must be 1-64 chars",
+    ),
+    (
+        "name with trailing hyphen",
+        sub_skill(r"^name: think-tank$", "name: think-tank-"),
+        "must be 1-64 chars",
+    ),
+    (
+        "name with double hyphen",
+        sub_skill(r"^name: think-tank$", "name: think--tank"),
+        "must be 1-64 chars",
+    ),
+    (
+        "missing description key",
+        sub_skill(r'^description: ".*"\n', ""),
+        "description must be 1-1024",
+    ),
+    (
+        "plugin.json name drift",
+        sub_plugin('"name": "think-tank"', '"name": "think-tank-x"'),
+        "plugin.json name",
+    ),
+    (
         "name of 65 chars",
         sub_skill(r"^name: think-tank$", "name: " + "a" * 65),
         "must be 1-64 chars",
@@ -171,7 +196,7 @@ CASES: list[tuple[str, Mutation, str]] = [
     ),
     (
         "nested duplicate key",
-        sub_skill(r'^  version: "([^"]+)"$', '  version: "1"\n  version: "2"'),
+        sub_skill(r'^  version: "?([^"\n]+)"?$', '  version: "1"\n  version: "2"'),
         "duplicate key",
     ),
     (
@@ -186,6 +211,32 @@ CASES: list[tuple[str, Mutation, str]] = [
         sub_plugin('"version": "', '"version": "9.9.9-'),
         "plugin.json version",
     ),
+]
+
+
+def unquote_version(root: Path) -> None:
+    """`version: 1.0.4` (unquoted) is still a YAML string, so it must validate."""
+    p = root / "SKILL.md"
+    text, n = re.subn(
+        r'^(  version: )"([^"\n]+)"$',
+        r"\1\2",
+        p.read_text(encoding="utf-8"),
+        count=1,
+        flags=re.M,
+    )
+    if n != 1:
+        raise RuntimeError("no quoted metadata.version to unquote")
+    p.write_text(text, encoding="utf-8")
+
+
+# Edge values the spec allows: these must still validate (exit 0).
+PASSING: list[tuple[str, Mutation]] = [
+    (
+        "description of exactly 1024 chars",
+        sub_skill(r'^description: ".*"$', 'description: "' + "x" * 1024 + '"'),
+    ),
+    ("body of exactly 500 lines", body_exactly(500)),
+    ("unquoted metadata.version", unquote_version),
 ]
 
 
@@ -229,9 +280,14 @@ def main() -> int:
                 f"{'ok ' if good else 'BAD'} {label} -> {rc}, want 1 with {expected!r}"
             )
             failures += not good
-    print(
-        f"{len(CASES) + 1 - failures}/{len(CASES) + 1} validator fixtures behaved as expected"
-    )
+        for label, mutate in PASSING:
+            root = fresh(base)
+            mutate(root)
+            rc, _ = run(root)
+            print(f"{'ok ' if rc == 0 else 'BAD'} {label} -> {rc} (want 0)")
+            failures += rc != 0
+    total = len(CASES) + len(PASSING) + 1
+    print(f"{total - failures}/{total} validator fixtures behaved as expected")
     return 1 if failures else 0
 
 
