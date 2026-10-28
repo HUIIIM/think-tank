@@ -19,8 +19,9 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - SKILL.md v1.0.3：闸门移到工作流最前；去向统一为"第 2、4 条走法务通道，第 1、3 条走 CEO/董事长通道"；写清"要不要花钱"可以辩论但只出建议，付款执行属硬保留 / gate moved first; routing unified; spending wording made consistent.
 
 ### Changed
-- `demo/eval.sh` 对受保护文本做 SHA-256 指纹校验：SKILL.md 治理铁律＋第 -2 步闸门、three-teams.md 不得代裁四条、`evals/smoke-02.md` 全文。只能发现这三段区间内的"改动"，不能判断含义；区间外的文字（例如在别处补一句"闸门已废止"）不检查，靠评审；有意修改须在同一提交中更新指纹。比较前只去掉行尾的 `\r`，CRLF 检出不误报；闸门标题按整行校验 / eval pins SHA-256 fingerprints of the protected text (detects edits inside the pinned regions only, not meaning or text elsewhere; intentional edits update the pin in the same commit); CR stripped so CRLF checkouts pass.
+- `demo/eval.sh` 对受保护文本做 SHA-256 指纹校验：SKILL.md 治理铁律＋第 -2 步闸门、three-teams.md 不得代裁四条、`evals/smoke-02.md` 全文。只能发现这三段区间内的"改动"，不能判断含义；区间外的文字（例如在别处补一句"闸门已废止"）不检查，靠评审；有意修改须在同一提交中更新指纹。比较前只去掉行尾的 `\r`，CRLF 检出不误报；闸门标题按整行校验 / eval pins SHA-256 fingerprints of the protected text (detects edits inside the pinned regions only, not meaning or text elsewhere; intentional edits update the pin in the same commit); only the trailing CR is stripped, so CRLF checkouts pass and a mid-line CR still changes the pin.
 - 新增 `demo/eval_selftest.py`（CI 运行）：未改动与 CRLF 副本必须 PASS，11 种篡改（含行内插入孤立回车）必须 FAIL；在旧版 eval.sh 上自测判红 / new eval self-test run in CI: unmodified and CRLF copies must PASS, 11 mutations (incl. a stray mid-line CR) must FAIL; it fails against the previous eval.sh.
+- shellcheck 改为按哈希安装（`shellcheck-py` 0.10.0.1，写入 `.github/requirements-lint.txt`），不再依赖 runner 预装版本 / shellcheck now installed from the hash-pinned requirements instead of the runner image.
 - 新增 `.gitattributes`：`*.sh` 固定 LF / `.gitattributes` keeps `*.sh` at LF.
 - README / PRODUCT："阻断式"措辞改为如实描述（设为必过检查后才阻断合并）/ "blocking" wording made accurate.
 - `evals/smoke-01.md`：带引号的转述去掉引号（含"减少重复确认""把他拉回执行细节""只管花钱"）；注记说明"花钱唯一硬保留"是旧口径 / quote-styled paraphrases unquoted; note on the old spending wording.
