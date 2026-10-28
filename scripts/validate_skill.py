@@ -102,7 +102,12 @@ def main(root: Path) -> int:
 
     plugin = root / ".claude-plugin" / "plugin.json"
     if plugin.exists():
-        pv = json.loads(plugin.read_text(encoding="utf-8")).get("version")
+        pdata = json.loads(plugin.read_text(encoding="utf-8"))
+        if pdata.get("name") != name:
+            errors.append(
+                f".claude-plugin/plugin.json name {pdata.get('name')!r} != SKILL.md name {name!r}"
+            )
+        pv = pdata.get("version")
         mv = meta.get("version") if isinstance(meta, dict) else None
         if pv != mv:
             errors.append(

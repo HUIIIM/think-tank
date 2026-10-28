@@ -1,12 +1,22 @@
 # Changelog / 变更日志
 
 本文件记录本仓库的所有重要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
-仓库尚无 git tag，因此暂不划分版本号区块；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.4`，位于 `metadata.version`）及其 Changelog 节。
+仓库尚无 git tag，因此按合并日期分节（`[Unreleased]` 为尚未合并的改动）；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.4`，位于 `metadata.version`）及其 Changelog 节。
 
 All notable changes to this repository are documented here, following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-There are no git tags yet, so entries are grouped by date under `[Unreleased]`; the skill's own version lives in `SKILL.md` (currently `1.0.4`, under `metadata.version`).
+There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` holds what is not merged yet); the skill's own version lives in `SKILL.md` (currently `1.0.4`, under `metadata.version`).
 
 ## [Unreleased]
+
+### Changed
+- `scripts/validate_skill.py`：`.claude-plugin/plugin.json` 的 `name` 也须等于 SKILL.md `name` / plugin.json name must match the skill name.
+- `scripts/test_validate_skill.py`：新增 name 连字符规则、缺 description 键、plugin.json name 漂移等反例，以及三个必须通过的边界用例（description 恰好 1024 字、正文恰好 500 行、未加引号的 `metadata.version`）；共 32 个 / more negative fixtures plus passing edge cases (32 in total).
+- README 仓库结构列出 `scripts/`、`.claude-plugin/` 与两份 evals；PRODUCT.md 的安全小节引用改为 `## Security` / README layout and PRODUCT.md cross-reference brought up to date.
+
+### 评估依据 / Evidence
+- PR #9 最终独立评估（bbb0477）列出的 P2 项 / P2 findings from the final independent assessment of #9.
+
+## 2026-10-22 – 2026-10-28 · skill 1.0.1 → 1.0.4（PR #2、#4、#5、#6、#10、#9 合并 / merged）
 
 ### Added
 - `Eval` 的 lint 作业新增 `scripts/validate_skill.py`（ruff + `mypy --strict` 同样覆盖）；PyYAML 与类型桩按哈希加入 `.github/requirements-lint.txt` / the lint job now also validates SKILL.md; PyYAML and its stubs are hash-pinned.
@@ -37,7 +47,7 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 ### 评估依据 / Evidence
 - 独立评估 SOTA 评分卡 #8 路线图第 1–3 项及第 10 项部分 / roadmap items 1–3 and part of 10 in #8.
 
-### 此前已合并、尚未发版 / earlier merged, unreleased (PR #2, #4, #5, #6, #10)
+### PR #2、#4、#5、#6、#10 的条目 / entries from PR #2, #4, #5, #6, #10
 #### Added
 - `docs/PRODUCT.md` 产品一页纸 / product one-pager.
 - `CHANGELOG.md`（本文件 / this file）.

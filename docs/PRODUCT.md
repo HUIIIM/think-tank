@@ -42,7 +42,7 @@
 ## 边界与风险
 - 不做：P0 紧急事项、纯执行层事项、事实不清且无最低证据基线的议题（打回研究）、门禁 0 不过的议题。
 - 已知限制：skill 本体是提示词协议（`SKILL.md`），质量依赖执行它的模型；demo 只验证"议题→草稿骨架"链路，不代表真实辩论质量。
-- 安全与隐私：仓库代码不联网、不收集数据；`demo/run.py` 只在本地写 `demo/output/decision-draft.md`（git 忽略）。实际运行时决策材料进入所用 Claude 环境，其存储与可见范围取决于该环境，未确认（TBD）。安全问题上报见 README `## 安全 / Security`。
+- 安全与隐私：仓库代码不联网、不收集数据；`demo/run.py` 只在本地写 `demo/output/decision-draft.md`（git 忽略）。实际运行时决策材料进入所用 Claude 环境，其存储与可见范围取决于该环境，未确认（TBD）。安全问题上报见 README `## Security`。
 
 ## 与其他 vertciti 产品的组合
 - 未确认（TBD）。README 将其称为 "Vertciti Skill Pack"；`SKILL.md` 致谢 live-panel-skill（MIT）的思想吸收，但仓库内没有与其他产品组合使用的具体说明。
