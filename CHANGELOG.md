@@ -21,6 +21,12 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - `demo/eval.sh`：四个席位标签从 SKILL.md 第 1 步抽取并在张力网络节内逐字比对；版本号必须等于 SKILL.md `metadata.version` / eval checks the four seat labels against SKILL.md inside the tension-network section, and the version equals `metadata.version`.
 - `scripts/validate_skill.py`：name 整串匹配（拒绝尾随换行）且须与目录名一致；检查 compatibility/license/allowed-tools 类型；扫描 scripts/assets 引用；拒绝重复键；`.claude-plugin/plugin.json` 版本须等于 `metadata.version` / stricter validator.
 - `demo/eval.sh`：description 必须含触发词（上智囊团 / think tank）；辩证过程节内每个席位（含意外视角）必须有带"一句话："的发言；新增 `\r` 注入、非法 UTF-8 议题和版本跟随用例（临时改 `metadata.version`，草稿必须跟随）/ invalid-UTF-8 and version-follow cases.
+- `demo/eval.sh` 对受保护文本做 SHA-256 指纹校验：SKILL.md 治理铁律＋第 -2 步闸门、three-teams.md 不得代裁四条、`evals/smoke-02.md` 全文。只能发现这三段区间内的"改动"，不能判断含义；区间外的文字（例如在别处补一句"闸门已废止"）不检查，靠评审；有意修改须在同一提交中更新指纹。比较前只去掉行尾的 `\r`，CRLF 检出不误报；闸门标题按整行校验 / eval pins SHA-256 fingerprints of the protected text (detects edits inside the pinned regions only, not meaning or text elsewhere; intentional edits update the pin in the same commit); only the trailing CR is stripped, so CRLF checkouts pass and a mid-line CR still changes the pin.
+- 新增 `demo/eval_selftest.py`（CI 运行）：未改动与 CRLF 副本必须 PASS，11 种篡改（含行内插入孤立回车）必须 FAIL；在旧版 eval.sh 上自测判红 / new eval self-test run in CI: unmodified and CRLF copies must PASS, 11 mutations (incl. a stray mid-line CR) must FAIL; it fails against the previous eval.sh.
+- shellcheck 改为按哈希安装（`shellcheck-py` 0.10.0.1，写入 `.github/requirements-lint.txt`），不再依赖 runner 预装版本 / shellcheck now installed from the hash-pinned requirements instead of the runner image.
+- 新增 `.gitattributes`：`*.sh` 固定 LF / `.gitattributes` keeps `*.sh` at LF.
+- README / PRODUCT："阻断式"措辞改为如实描述（设为必过检查后才阻断合并）/ "blocking" wording made accurate.
+- `evals/smoke-01.md`：带引号的转述去掉引号（含"减少重复确认""把他拉回执行细节""只管花钱"）；注记说明"花钱唯一硬保留"是旧口径 / quote-styled paraphrases unquoted; note on the old spending wording.
 
 ### Fixed
 - `demo/run.py`：议题中的非法 UTF-8 字节替换为 U+FFFD，不再崩溃（旧问题）/ invalid UTF-8 in the topic no longer crashes (pre-existing).
@@ -38,7 +44,7 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - README：状态行、`## Security`、`## Licence` 节 / status line, Security and Licence sections (README is English-only since `2d7bf80`).
 - SKILL.md v1.0.2：第 -2 步"不得代裁闸门"；"意见为建议"规则不覆盖不得代裁四条 / step -2 non-delegable gate; the input-as-evidence rule does not override the four non-delegable matter types.
 - CI `Eval` 工作流：每个 PR 和推到 main 的 push 都运行 `demo/eval.sh` / `Eval` workflow runs `demo/eval.sh` on every PR and on pushes to main.
-- `Eval` 新增阻断式 lint 作业：shellcheck、ruff、`mypy --strict`；工具按 `.github/requirements-lint.txt` 哈希安装 / blocking lint job (shellcheck, ruff, mypy --strict), tools installed with pinned hashes.
+- `Eval` 新增 lint 作业（设为必过检查后才阻断合并）：shellcheck、ruff、`mypy --strict`；工具按 `.github/requirements-lint.txt` 哈希安装 / lint job, blocks merges once required (shellcheck, ruff, mypy --strict), tools installed with pinned hashes.
 - `evals/smoke-02.md`：不得代裁闸门的反例回归（smoke-01 的议题必须在第 -2 步被拦下），由一个全新会话执行；`demo/eval.sh` 静态检查闸门位于工作流首位且该记录存在 / non-delegable gate regression run; eval checks the gate is the first step and the record exists.
 - SKILL.md v1.0.3：闸门移到工作流最前；去向统一为"第 2、4 条走法务通道，第 1、3 条走 CEO/董事长通道"；写清"要不要花钱"可以辩论但只出建议，付款执行属硬保留 / gate moved first; routing unified; spending wording made consistent.
 

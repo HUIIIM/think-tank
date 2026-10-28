@@ -6,7 +6,7 @@ strategic or cross-domain calls.
 
 | | |
 |---|---|
-| Status | active — v1.0.4 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all blocking in CI), dry-runs in `evals/smoke-01.md` and `evals/smoke-02.md` (non-delegable gate); negative-fixture tests for the SKILL.md validator (`scripts/test_validate_skill.py`) |
+| Status | active — v1.0.4 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all run in CI on every PR; they block merges once set as required checks on `main`), dry-runs in `evals/smoke-01.md` and `evals/smoke-02.md` (non-delegable gate); negative-fixture tests for the SKILL.md validator (`scripts/test_validate_skill.py`); `demo/eval_selftest.py` checks that the smoke check catches known-bad edits |
 | Type | vertciti skill (agent skill defined in [SKILL.md](SKILL.md)) |
 | Install / use | Load `SKILL.md` as a skill in your agent; try the zero-dependency demo with `python3 demo/run.py --topic "..."` |
 | Licence | MIT ([LICENSE](LICENSE)), Copyright (c) 2026 Jiahui Miao |
@@ -61,7 +61,7 @@ recorded in [`evals/smoke-01.md`](evals/smoke-01.md).
 SKILL.md      the skill: debate protocol, input and output contracts
 demo/         topic -> demo/output/decision-draft.md (skeleton) + eval.sh
 references/   three-team charter, decision-record template
-evals/        smoke evaluation with one dry-run record
+evals/        dry-run records: smoke-01 (full debate), smoke-02 (non-delegable gate)
 docs/         product one-pager
 ```
 
