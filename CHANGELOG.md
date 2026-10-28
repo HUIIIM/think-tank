@@ -14,12 +14,14 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - README：状态行、`## Security`、`## Licence` 节 / status line, Security and Licence sections (README is English-only since `2d7bf80`).
 - SKILL.md v1.0.2：第 -2 步"不得代裁闸门"；"意见为建议"规则不覆盖不得代裁四条 / step -2 non-delegable gate; the input-as-evidence rule does not override the four non-delegable matter types.
 - CI `Eval` 工作流：每个 PR 和推到 main 的 push 都运行 `demo/eval.sh` / `Eval` workflow runs `demo/eval.sh` on every PR and on pushes to main.
-- `Eval` 新增 lint 作业（设为必过检查后才阻断合并）：shellcheck、ruff、`mypy --strict`；工具按 `.github/requirements-lint.txt` 哈希安装 / blocking lint job (shellcheck, ruff, mypy --strict), tools installed with pinned hashes.
+- `Eval` 新增 lint 作业（设为必过检查后才阻断合并）：shellcheck、ruff、`mypy --strict`；工具按 `.github/requirements-lint.txt` 哈希安装 / lint job, blocks merges once required (shellcheck, ruff, mypy --strict), tools installed with pinned hashes.
 - `evals/smoke-02.md`：不得代裁闸门的反例回归（smoke-01 的议题必须在第 -2 步被拦下），由一个全新会话执行；`demo/eval.sh` 静态检查闸门位于工作流首位且该记录存在 / non-delegable gate regression run; eval checks the gate is the first step and the record exists.
 - SKILL.md v1.0.3：闸门移到工作流最前；去向统一为"第 2、4 条走法务通道，第 1、3 条走 CEO/董事长通道"；写清"要不要花钱"可以辩论但只出建议，付款执行属硬保留 / gate moved first; routing unified; spending wording made consistent.
 
 ### Changed
-- `demo/eval.sh` 加固：闸门判定句、命中处理与去向口径、three-teams.md 去向口径、smoke-02 的结论/命中条款/去向/PASS 各行都按"整行精确匹配且只出现一次"校验，smoke-02 不允许额外的"结论："行；先去掉 `\r`，CRLF 检出不误报 / eval checks the gate, routing and smoke-02 lines by exact whole-line match (exactly once), rejects extra conclusion lines, and strips CR so CRLF checkouts pass.
+- `demo/eval.sh` 对受保护文本做 SHA-256 指纹校验：SKILL.md 治理铁律＋第 -2 步闸门、three-teams.md 不得代裁四条、`evals/smoke-02.md` 全文。只能发现"改动"，不能判断含义；有意修改须在同一提交中更新指纹。比较前去掉 `\r`，CRLF 检出不误报；闸门标题按整行校验 / eval pins SHA-256 fingerprints of the protected text (detects any edit, not meaning; intentional edits update the pin in the same commit); CR stripped so CRLF checkouts pass.
+- 新增 `demo/eval_selftest.py`（CI 运行）：未改动与 CRLF 副本必须 PASS，10 种篡改必须 FAIL；在旧版 eval.sh 上自测判红 / new eval self-test run in CI: unmodified and CRLF copies must PASS, 10 mutations must FAIL; it fails against the previous eval.sh.
+- 新增 `.gitattributes`：`*.sh` 固定 LF / `.gitattributes` keeps `*.sh` at LF.
 - README / PRODUCT："阻断式"措辞改为如实描述（设为必过检查后才阻断合并）/ "blocking" wording made accurate.
 - `evals/smoke-01.md`：带引号的转述去掉引号（含"减少重复确认""把他拉回执行细节""只管花钱"）；注记说明"花钱唯一硬保留"是旧口径 / quote-styled paraphrases unquoted; note on the old spending wording.
 - `demo/run.py` 节名对齐 SKILL.md 输出契约（`## 总协调裁决书`、`## CEO 终裁与决策记录`），版本号改为 1.0.2（原写 v1.1），新增 `--out` / demo headings match the SKILL.md output contract; version string fixed; `--out` option.
