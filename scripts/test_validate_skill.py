@@ -221,12 +221,20 @@ def unquote_version(root: Path) -> None:
     """
     p = root / "SKILL.md"
     text = p.read_text(encoding="utf-8")
-    if re.search(r'^  version: [^"\n]+$', text, flags=re.M):
+    if re.search(r"""^  version: [^"'\n]+$""", text, flags=re.M):
         return
     text, n = re.subn(r'^(  version: )"([^"\n]+)"$', r"\1\2", text, count=1, flags=re.M)
     if n != 1:
         raise RuntimeError("metadata.version not found")
     p.write_text(text, encoding="utf-8")
+
+
+def assert_unquoted(root: Path) -> None:
+    line = re.search(
+        r"^  version: (.+)$", (root / "SKILL.md").read_text(encoding="utf-8"), re.M
+    )
+    if not line or line.group(1)[0] in "\"'":
+        raise RuntimeError("unquote_version left metadata.version quoted")
 
 
 # Edge values the spec allows: these must still validate (exit 0).
@@ -283,6 +291,8 @@ def main() -> int:
         for label, mutate in PASSING:
             root = fresh(base)
             mutate(root)
+            if mutate is unquote_version:
+                assert_unquoted(root)
             rc, _ = run(root)
             print(f"{'ok ' if rc == 0 else 'BAD'} {label} -> {rc} (want 0)")
             failures += rc != 0
