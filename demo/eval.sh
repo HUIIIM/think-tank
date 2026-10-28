@@ -30,13 +30,14 @@ check "$F"
 
 # 不得代裁闸门（SKILL.md 第 -2 步）：必须是工作流的第一步，且整行标题不变
 ROOT="$DEMO/.."
-first_step="$(tr -d '\r' < "$ROOT/SKILL.md" | sed -n '/^## 工作流/,/^## 输出契约/p' | grep -m1 '^### ')"
+# 只去掉行尾的 \r（CRLF 检出不误报）；行内孤立的 \r 保留，会改变指纹。$'…' 让 BSD sed 也认得 \r。
+nocr() { sed $'s/\r$//' "$1"; }
+first_step="$(nocr "$ROOT/SKILL.md" | sed -n '/^## 工作流/,/^## 输出契约/p' | grep -m1 '^### ')"
 case "$first_step" in "### 第 -2 步：不得代裁闸门（强制，先于一切步骤）") ;; *) echo "  工作流第一步不是不得代裁闸门：$first_step"; ok=0 ;; esac
 # 受保护文本的 SHA-256 指纹：治理铁律＋闸门（SKILL.md）、不得代裁四条（three-teams.md）、
-# 闸门反例回归记录（evals/smoke-02.md）。这只能发现"改动"，不能判断改动的含义：
-# 任何改动都会 FAIL，必须在同一次提交里更新下面的指纹，评审时一眼可见。
-# 比较前先去掉 \r，Windows（CRLF）检出不会误报。
-nocr() { tr -d '\r' < "$1"; }
+# 闸门反例回归记录（evals/smoke-02.md）。这只能发现这三段区间内的"改动"，不能判断改动的含义：
+# 区间内任何改动都会 FAIL，必须在同一次提交里更新下面的指纹，评审时一眼可见。
+# 区间外的文字不检查——例如在别处补一句"闸门已废止"不会被发现，只能靠评审。
 sha() { if command -v sha256sum >/dev/null 2>&1; then sha256sum; else shasum -a 256; fi | cut -d' ' -f1; }
 pin() {  # pin <名称> <期望指纹> <实际指纹>
   [ "$2" = "$3" ] || { echo "  受保护文本被改动：$1（实际指纹 $3；确属有意修改，请在同一提交中更新 demo/eval.sh 的指纹）"; ok=0; }
