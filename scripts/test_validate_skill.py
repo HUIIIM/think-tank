@@ -7,6 +7,7 @@ so every rule is tested on its own rather than through another rule.
 The unmutated copy must exit 0. Exit status is non-zero if any expectation fails.
 """
 
+import json
 import re
 import shutil
 import subprocess
@@ -50,6 +51,35 @@ def sub_plugin(old: str, new: str) -> Mutation:
         p.write_text(text.replace(old, new, 1), encoding="utf-8")
 
     return apply
+
+
+def body_exactly(n_lines: int) -> Mutation:
+    """Pad the SKILL.md body so it has exactly n_lines lines (as the validator counts)."""
+
+    def apply(root: Path) -> None:
+        p = root / "SKILL.md"
+        text = p.read_text(encoding="utf-8")
+        head, body = text.split("\n---\n", 1)
+        have = body.count("\n") + 1
+        if have > n_lines:
+            raise RuntimeError(f"body already has {have} lines")
+        p.write_text(
+            head + "\n---\n" + body + "x\n" * (n_lines - have), encoding="utf-8"
+        )
+
+    return apply
+
+
+def plugin_without_version(root: Path) -> None:
+    p = root / ".claude-plugin" / "plugin.json"
+    data = json.loads(p.read_text(encoding="utf-8"))
+    del data["version"]
+    p.write_text(json.dumps(data), encoding="utf-8")
+
+
+def strip_frontmatter(root: Path) -> None:
+    p = root / "SKILL.md"
+    p.write_text(p.read_text(encoding="utf-8").split("\n---\n", 1)[1], encoding="utf-8")
 
 
 CASES: list[tuple[str, Mutation, str]] = [
@@ -123,11 +153,34 @@ CASES: list[tuple[str, Mutation, str]] = [
         sub_skill(r"^license: MIT$", "license: MIT\ncompatibility: [claude-code]"),
         "compatibility must be",
     ),
+    ("body of exactly 501 lines", body_exactly(501), "SKILL.md body is 501 lines"),
     (
-        "body over 500 lines",
-        sub_skill(r"^## Changelog$", "## Changelog\n" + "x\n" * 501),
-        "SKILL.md body is",
+        "name of 65 chars",
+        sub_skill(r"^name: think-tank$", "name: " + "a" * 65),
+        "must be 1-64 chars",
     ),
+    (
+        "empty description",
+        sub_skill(r'^description: ".*"$', 'description: ""'),
+        "description must be 1-1024",
+    ),
+    (
+        "empty compatibility",
+        sub_skill(r"^license: MIT$", 'license: MIT\ncompatibility: ""'),
+        "compatibility must be",
+    ),
+    (
+        "nested duplicate key",
+        sub_skill(r'^  version: "([^"]+)"$', '  version: "1"\n  version: "2"'),
+        "duplicate key",
+    ),
+    (
+        "missing references/ reference",
+        sub_skill(r"^## 输出契约$", "## 输出契约\n\n见 `references/missing.md`。"),
+        "referenced file missing: references/missing.md",
+    ),
+    ("plugin.json without version", plugin_without_version, "plugin.json version"),
+    ("no frontmatter", strip_frontmatter, "no YAML frontmatter"),
     (
         "plugin.json version drift",
         sub_plugin('"version": "', '"version": "9.9.9-'),

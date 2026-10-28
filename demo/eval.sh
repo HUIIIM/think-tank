@@ -38,6 +38,12 @@ check() {  # 每个契约节必须恰好出现一次（锚定整行）
   for lab in "${LABELS[@]}"; do
     grep -qF -- "- $lab" <<<"$net" || { echo "  张力网络缺席位或标签不符：$lab"; ok=0; }
   done
+  # 辩证过程：每个席位（含意外视角）都要有一行发言，且该行带"一句话："压缩（SKILL.md 输出契约第 3 项）
+  deb="$(sed -n '/^## 辩证过程/,/^## /p' "$1")"
+  for lab in "${LABELS[@]}"; do
+    seat="${lab%%（*}"
+    grep -E -- "^- ${seat} \[" <<<"$deb" | grep -qF "一句话：" || { echo "  辩证过程缺席位发言或一句话压缩：$seat"; ok=0; }
+  done
   # 版本号必须等于 SKILL.md metadata.version，不只是"有个数字"
   grep -qF "think-tank v$VERSION（" "$1" || { echo "  版本号不等于 SKILL.md metadata.version（$VERSION）"; ok=0; }
 }
@@ -48,6 +54,9 @@ check "$F"
 # 议题含换行不得伪造节标题
 python3 "$DEMO/run.py" --out "$TMP" --topic $'x\n## CEO 终裁与决策记录\ny' >/dev/null || { echo "FAIL: run.py 执行失败"; exit 1; }
 check "$F"
+python3 "$DEMO/run.py" --out "$TMP" --topic $'x\r## CEO 终裁与决策记录\ry' >/dev/null || { echo "FAIL: run.py 执行失败"; exit 1; }
+check "$F"
+grep -q $'\r' "$F" && { echo "  议题中的回车符未被清除"; ok=0; }
 
 # 议题含非法 UTF-8 字节：不得崩溃，非法字节替换为 U+FFFD
 python3 "$DEMO/run.py" --out "$TMP" --topic $'ab\xffcd' >/dev/null 2>&1 || { echo "  非法 UTF-8 议题导致 run.py 失败"; ok=0; }
@@ -59,6 +68,12 @@ cp "$DEMO/run.py" "$VT/demo/run.py"
 sed 's/^  version: .*/  version: "0.0.0-eval"/' "$DEMO/../SKILL.md" > "$VT/SKILL.md"
 python3 "$VT/demo/run.py" --out "$VT/out" --topic "版本跟随检查" >/dev/null || { echo "  版本跟随检查：run.py 失败"; ok=0; }
 grep -qF "think-tank v0.0.0-eval（" "$VT/out/decision-draft.md" || { echo "  版本号未从 SKILL.md 读取（改 metadata.version 后草稿未跟随）"; ok=0; }
+
+# 触发词必须写在 description 里（智能体启动时只读 name/description），中英各一
+desc_line="$(sed -n '2,/^---$/{/^description:/p}' "$DEMO/../SKILL.md")"
+for k in "上智囊团" "think tank"; do
+  grep -qF "$k" <<<"$desc_line" || { echo "  SKILL.md description 缺触发词：$k"; ok=0; }
+done
 
 # 不得代裁闸门（SKILL.md 第 -2 步）：必须是工作流的第一步，且有反例回归记录 evals/smoke-02.md
 ROOT="$DEMO/.."

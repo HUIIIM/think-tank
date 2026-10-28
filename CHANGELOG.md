@@ -13,14 +13,14 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - `scripts/validate_skill.py`：按 https://agentskills.io/specification 校验 frontmatter 键、name、description、metadata、正文行数与引用文件 / SKILL.md validator.
 - `.claude-plugin/plugin.json`：单 skill 插件清单，`claude plugin validate` 通过 / single-skill plugin manifest.
 - `.gitignore`：`demo/output/` 不再入库 / generated demo output is git-ignored.
-- `scripts/test_validate_skill.py`：16 个反例夹具，每条规则单独断言自己的错误信息（含边界值：description 恰好 1025 字、正文 >500 行），在 CI lint 作业中运行 / 16 negative fixtures, each asserting its own rule's error (incl. boundary values), run in CI.
+- `scripts/test_validate_skill.py`：23 个反例夹具，每个夹具断言所测规则自己的错误信息（含边界值：name 65 字、description 恰好 1025 字、正文恰好 501 行），在 CI lint 作业中运行 / 23 negative fixtures, each asserting its own rule's error (incl. exact boundary values), run in CI.
 
 ### Changed
 - SKILL.md v1.0.4：frontmatter 对齐 Agent Skills 规范（自定义字段移入 `metadata`，触发词与英文摘要写进 `description`）；arXiv 2609.26637 引用改为已核实表述（独立评估 #8 已核对标题与出处）；协议步骤不变 / spec-valid frontmatter; arXiv citation verified; protocol unchanged.
 - `demo/run.py`：三队标签与 SKILL.md 一致（红＝质疑/风险、蓝＝价值/用户、白＝工程/执行），补意外视角与一句话压缩占位，版本号从 SKILL.md 读取 / team labels match SKILL.md, outside-view seat added, version read from SKILL.md.
 - `demo/eval.sh`：四个席位标签从 SKILL.md 第 1 步抽取并在张力网络节内逐字比对；版本号必须等于 SKILL.md `metadata.version` / eval checks the four seat labels against SKILL.md inside the tension-network section, and the version equals `metadata.version`.
 - `scripts/validate_skill.py`：name 整串匹配（拒绝尾随换行）且须与目录名一致；检查 compatibility/license/allowed-tools 类型；扫描 scripts/assets 引用；拒绝重复键；`.claude-plugin/plugin.json` 版本须等于 `metadata.version` / stricter validator.
-- `demo/eval.sh`：新增非法 UTF-8 议题用例和版本跟随用例（临时改 `metadata.version`，草稿必须跟随）/ invalid-UTF-8 and version-follow cases.
+- `demo/eval.sh`：description 必须含触发词（上智囊团 / think tank）；辩证过程节内每个席位（含意外视角）必须有带"一句话："的发言；新增 `\r` 注入、非法 UTF-8 议题和版本跟随用例（临时改 `metadata.version`，草稿必须跟随）/ invalid-UTF-8 and version-follow cases.
 
 ### Fixed
 - `demo/run.py`：议题中的非法 UTF-8 字节替换为 U+FFFD，不再崩溃（旧问题）/ invalid UTF-8 in the topic no longer crashes (pre-existing).
