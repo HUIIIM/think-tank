@@ -1,14 +1,44 @@
 # Changelog / 变更日志
 
 本文件记录本仓库的所有重要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
-仓库尚无 git tag，因此暂不划分版本号区块；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.3`）及其 Changelog 节。
+仓库尚无 git tag，因此暂不划分版本号区块；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.4`，位于 `metadata.version`）及其 Changelog 节。
 
 All notable changes to this repository are documented here, following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-There are no git tags yet, so entries are grouped by date under `[Unreleased]`; the skill's own version lives in `SKILL.md` (currently `1.0.3`).
+There are no git tags yet, so entries are grouped by date under `[Unreleased]`; the skill's own version lives in `SKILL.md` (currently `1.0.4`, under `metadata.version`).
 
 ## [Unreleased]
 
 ### Added
+- `Eval` 的 lint 作业新增 `scripts/validate_skill.py`（ruff + `mypy --strict` 同样覆盖）；PyYAML 与类型桩按哈希加入 `.github/requirements-lint.txt` / the lint job now also validates SKILL.md; PyYAML and its stubs are hash-pinned.
+- `scripts/validate_skill.py`：按 https://agentskills.io/specification 校验 frontmatter 键、name、description、metadata、正文行数与引用文件 / SKILL.md validator.
+- `.claude-plugin/plugin.json`：单 skill 插件清单，`claude plugin validate` 通过 / single-skill plugin manifest.
+- `.gitignore`：`demo/output/` 不再入库 / generated demo output is git-ignored.
+- `scripts/test_validate_skill.py`：23 个反例夹具，每个夹具断言所测规则自己的错误信息（含边界值：name 65 字、description 恰好 1025 字、正文恰好 501 行），在 CI lint 作业中运行 / 23 negative fixtures, each asserting its own rule's error (incl. exact boundary values), run in CI.
+
+### Changed
+- SKILL.md v1.0.4：frontmatter 对齐 Agent Skills 规范（自定义字段移入 `metadata`，触发词与英文摘要写进 `description`）；arXiv 2609.26637 引用改为已核实表述（独立评估 #8 已核对标题与出处）；协议步骤不变 / spec-valid frontmatter; arXiv citation verified; protocol unchanged.
+- `demo/run.py`：三队标签与 SKILL.md 一致（红＝质疑/风险、蓝＝价值/用户、白＝工程/执行），补意外视角与一句话压缩占位，版本号从 SKILL.md 读取 / team labels match SKILL.md, outside-view seat added, version read from SKILL.md.
+- `demo/eval.sh`：四个席位标签从 SKILL.md 第 1 步抽取并在张力网络节内逐字比对；版本号必须等于 SKILL.md `metadata.version` / eval checks the four seat labels against SKILL.md inside the tension-network section, and the version equals `metadata.version`.
+- `scripts/validate_skill.py`：name 整串匹配（拒绝尾随换行）且须与目录名一致；检查 compatibility/license/allowed-tools 类型；扫描 scripts/assets 引用；拒绝重复键；`.claude-plugin/plugin.json` 版本须等于 `metadata.version` / stricter validator.
+- `demo/eval.sh`：description 必须含触发词（上智囊团 / think tank）；辩证过程节内每个席位（含意外视角）必须有带"一句话："的发言；新增 `\r` 注入、非法 UTF-8 议题和版本跟随用例（临时改 `metadata.version`，草稿必须跟随）/ invalid-UTF-8 and version-follow cases.
+- `demo/eval.sh` 对受保护文本做 SHA-256 指纹校验：SKILL.md 治理铁律＋第 -2 步闸门、three-teams.md 不得代裁四条、`evals/smoke-02.md` 全文。只能发现这三段区间内的"改动"，不能判断含义；区间外的文字（例如在别处补一句"闸门已废止"）不检查，靠评审；有意修改须在同一提交中更新指纹。比较前只去掉行尾的 `\r`，CRLF 检出不误报；闸门标题按整行校验 / eval pins SHA-256 fingerprints of the protected text (detects edits inside the pinned regions only, not meaning or text elsewhere; intentional edits update the pin in the same commit); only the trailing CR is stripped, so CRLF checkouts pass and a mid-line CR still changes the pin.
+- 新增 `demo/eval_selftest.py`（CI 运行）：未改动与 CRLF 副本必须 PASS，11 种篡改（含行内插入孤立回车）必须 FAIL；在旧版 eval.sh 上自测判红 / new eval self-test run in CI: unmodified and CRLF copies must PASS, 11 mutations (incl. a stray mid-line CR) must FAIL; it fails against the previous eval.sh.
+- shellcheck 改为按哈希安装（`shellcheck-py` 0.10.0.1，写入 `.github/requirements-lint.txt`），不再依赖 runner 预装版本 / shellcheck now installed from the hash-pinned requirements instead of the runner image.
+- 新增 `.gitattributes`：`*.sh` 固定 LF / `.gitattributes` keeps `*.sh` at LF.
+- README / PRODUCT："阻断式"措辞改为如实描述（设为必过检查后才阻断合并）/ "blocking" wording made accurate.
+- `evals/smoke-01.md`：带引号的转述去掉引号（含"减少重复确认""把他拉回执行细节""只管花钱"）；注记说明"花钱唯一硬保留"是旧口径 / quote-styled paraphrases unquoted; note on the old spending wording.
+
+### Fixed
+- `demo/run.py`：议题中的非法 UTF-8 字节替换为 U+FFFD，不再崩溃（旧问题）/ invalid UTF-8 in the topic no longer crashes (pre-existing).
+
+### Removed
+- 已提交的 `demo/output/decision-draft.md` / the committed demo output.
+
+### 评估依据 / Evidence
+- 独立评估 SOTA 评分卡 #8 路线图第 1–3 项及第 10 项部分 / roadmap items 1–3 and part of 10 in #8.
+
+### 此前已合并、尚未发版 / earlier merged, unreleased (PR #2, #4, #5, #6, #10)
+#### Added
 - `docs/PRODUCT.md` 产品一页纸 / product one-pager.
 - `CHANGELOG.md`（本文件 / this file）.
 - README：状态行、`## Security`、`## Licence` 节 / status line, Security and Licence sections (README is English-only since `2d7bf80`).
@@ -18,13 +48,7 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - `evals/smoke-02.md`：不得代裁闸门的反例回归（smoke-01 的议题必须在第 -2 步被拦下），由一个全新会话执行；`demo/eval.sh` 静态检查闸门位于工作流首位且该记录存在 / non-delegable gate regression run; eval checks the gate is the first step and the record exists.
 - SKILL.md v1.0.3：闸门移到工作流最前；去向统一为"第 2、4 条走法务通道，第 1、3 条走 CEO/董事长通道"；写清"要不要花钱"可以辩论但只出建议，付款执行属硬保留 / gate moved first; routing unified; spending wording made consistent.
 
-### Changed
-- `demo/eval.sh` 对受保护文本做 SHA-256 指纹校验：SKILL.md 治理铁律＋第 -2 步闸门、three-teams.md 不得代裁四条、`evals/smoke-02.md` 全文。只能发现这三段区间内的"改动"，不能判断含义；区间外的文字（例如在别处补一句"闸门已废止"）不检查，靠评审；有意修改须在同一提交中更新指纹。比较前只去掉行尾的 `\r`，CRLF 检出不误报；闸门标题按整行校验 / eval pins SHA-256 fingerprints of the protected text (detects edits inside the pinned regions only, not meaning or text elsewhere; intentional edits update the pin in the same commit); only the trailing CR is stripped, so CRLF checkouts pass and a mid-line CR still changes the pin.
-- 新增 `demo/eval_selftest.py`（CI 运行）：未改动与 CRLF 副本必须 PASS，11 种篡改（含行内插入孤立回车）必须 FAIL；在旧版 eval.sh 上自测判红 / new eval self-test run in CI: unmodified and CRLF copies must PASS, 11 mutations (incl. a stray mid-line CR) must FAIL; it fails against the previous eval.sh.
-- shellcheck 改为按哈希安装（`shellcheck-py` 0.10.0.1，写入 `.github/requirements-lint.txt`），不再依赖 runner 预装版本 / shellcheck now installed from the hash-pinned requirements instead of the runner image.
-- 新增 `.gitattributes`：`*.sh` 固定 LF / `.gitattributes` keeps `*.sh` at LF.
-- README / PRODUCT："阻断式"措辞改为如实描述（设为必过检查后才阻断合并）/ "blocking" wording made accurate.
-- `evals/smoke-01.md`：带引号的转述去掉引号（含"减少重复确认""把他拉回执行细节""只管花钱"）；注记说明"花钱唯一硬保留"是旧口径 / quote-styled paraphrases unquoted; note on the old spending wording.
+#### Changed
 - `demo/run.py` 节名对齐 SKILL.md 输出契约（`## 总协调裁决书`、`## CEO 终裁与决策记录`），版本号改为 1.0.2（原写 v1.1），新增 `--out` / demo headings match the SKILL.md output contract; version string fixed; `--out` option.
 - `demo/eval.sh` 从 SKILL.md 读取契约节名、输出写临时目录（不再改动仓库文件）、新增换行注入用例 / eval reads contract headings from SKILL.md, writes to a temp dir, adds a newline-injection case.
 - 全部 GitHub Actions 按 commit SHA 固定 / all GitHub Actions pinned by commit SHA.
@@ -32,10 +56,10 @@ There are no git tags yet, so entries are grouped by date under `[Unreleased]`; 
 - `evals/smoke-01.md` 脱敏：直接引语全部改为转述，移除精确时间戳、API 返回字段与内部文件引用（更早的提交历史中仍有原文） / redacted direct quotes, exact timestamps, API field names and internal file references.
 - `SKILL.md` 推理外化纪律：逐字英文引文改为转述（洁净室规则：不复制原文），arXiv 编号标注"未核实" / verbatim quote replaced by a paraphrase; arXiv citation marked unverified.
 
-### Removed
+#### Removed
 - README（`2d7bf80`）删去了 FAQ、场景表、Roadmap 与录屏占位 / README dropped the FAQ, scenario table, Roadmap and recording placeholder.
 
-### Fixed
+#### Fixed
 - `demo/run.py`：议题中的换行被压成空格，用户输入不能再伪造节标题 / newlines in the topic are collapsed so input cannot forge section headings.
 - `gitleaks.yml`：在 `permissions` 中补 `pull-requests: read`，避免 gitleaks-action 在 PR 上 403 / add `pull-requests: read` so gitleaks-action does not 403 on PRs.
 

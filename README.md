@@ -6,7 +6,7 @@ strategic or cross-domain calls.
 
 | | |
 |---|---|
-| Status | active — v1.0.3 (version from [SKILL.md](SKILL.md); no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy (all run in CI on every PR; they block merges once set as required checks on `main`), dry-runs in `evals/smoke-01.md` and `evals/smoke-02.md` (non-delegable gate); `demo/eval_selftest.py` checks that the smoke check catches known-bad edits; no unit tests of the skill itself |
+| Status | active — v1.0.4 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all run in CI on every PR; they block merges once set as required checks on `main`), dry-runs in `evals/smoke-01.md` and `evals/smoke-02.md` (non-delegable gate); negative-fixture tests for the SKILL.md validator (`scripts/test_validate_skill.py`); `demo/eval_selftest.py` checks that the smoke check catches known-bad edits |
 | Type | vertciti skill (agent skill defined in [SKILL.md](SKILL.md)) |
 | Install / use | Load `SKILL.md` as a skill in your agent; try the zero-dependency demo with `python3 demo/run.py --topic "..."` |
 | Licence | MIT ([LICENSE](LICENSE)), Copyright (c) 2026 Jiahui Miao |
@@ -89,7 +89,7 @@ in `SKILL.md`). It is reimplemented clean-room under an internal clean-room rule
 Do not open a public issue for security problems. Use **Security → Report a vulnerability** on this
 repository; the HUIIIM organisation default
 [SECURITY.md](https://github.com/HUIIIM/.github/blob/main/SECURITY.md) applies (this repository has no
-SECURITY.md of its own). CI runs the demo smoke check, gitleaks secret scanning and OpenSSF Scorecard; all Actions are pinned by commit SHA.
+SECURITY.md of its own). CI runs the demo smoke check, shellcheck / ruff / mypy, SKILL.md spec validation, gitleaks secret scanning and OpenSSF Scorecard; all Actions are pinned by commit SHA.
 
 ## Contributing
 

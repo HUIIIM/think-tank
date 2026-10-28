@@ -9,7 +9,7 @@ bash demo/eval.sh  # 输出 PASS/FAIL；写临时目录，不改仓库文件
 ```
 
 ## 输出
-`demo/output/decision-draft.md`（可用 `--out` 改目录）：按 `SKILL.md` 输出契约，开场定义/张力网络/辩证过程/总协调裁决书/CEO 终裁与决策记录五节齐全，
+`demo/output/decision-draft.md`（git 忽略；可用 `--out` 改目录）：按 `SKILL.md` 输出契约，开场定义/张力网络/辩证过程/总协调裁决书/CEO 终裁与决策记录五节齐全，
 头部标注 `[DEMO DRAFT·不进正式决策日志]`。
 
 ## 诚实边界

@@ -33,7 +33,7 @@ MUTATIONS = [
     ("run.py 契约节名改动", "demo/run.py",
      "## 总协调裁决书", "## 总协调建议"),
     ("run.py 去掉换行处理", "demo/run.py",
-     'topic = " ".join(a.topic.split())', "topic = a.topic"),
+     '.decode("utf-8", "replace").split()\n)', '.decode("utf-8", "replace").split(" ")\n)'),
 ]
 
 

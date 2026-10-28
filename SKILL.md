@@ -1,13 +1,13 @@
 ---
-name: "think-tank"
-description: "最终交付 编号决策记录：红/蓝/白三队加意外视角对真实待决策事项展开结构化辩论，输出带 ASCII 框架图的多轮辩证过程、总协调建议与 CEO 终裁结论。适用于需要集体研判的战略级或跨域决策事项，不适用于紧急 P0 故障等需立即处置的事件。"
-user_invocable: true
-version: "1.0.3"
-triggers: "战略级/跨域待决策事项需要结构化辩论；说\"上智囊团\"时触发"
-requires: "一个真实的待决策事项（不是抽象议题、不是练笔）"
-inputs: "决策陈述＋背景材料"
-safety: "红蓝白三队＋意外视角真辩论；输出 编号决策记录；CEO 终裁；紧急 P0 不适用"
-
+name: think-tank
+description: "智囊团辩证决策：把一个真实待决策事项交给红/蓝/白三队加意外视角做结构化多轮辩论，输出带 ASCII 框架图的辩证过程、总协调裁决书、CEO 终裁（接/改/驳）与编号决策记录。当用户说\"上智囊团\"\"智囊团\"\"think tank\"\"red-team this decision\"，或需要对战略级/跨域决策做结构化辩论时使用；不适用于 P0 故障等需立即处置的紧急事项。Structured red/blue/white-team debate for a real pending decision, ending in a coordinator's ruling, a CEO verdict (accept / revise / reject) and a numbered decision record."
+license: MIT
+metadata:
+  version: "1.0.4"
+  triggers: "战略级/跨域待决策事项需要结构化辩论；说\"上智囊团\"时触发"
+  requires: "一个真实的待决策事项（不是抽象议题、不是练笔）"
+  inputs: "决策陈述＋背景材料"
+  safety: "红蓝白三队＋意外视角真辩论；输出编号决策记录；CEO 终裁；紧急 P0 不适用"
 ---
 
 # Think-Tank（智囊团辩证决策）
@@ -129,7 +129,7 @@ roundtable 只贡献辩论组织形式——议题、终裁、决策史全部是
 
 ### 推理外化纪律（forced-reasoning 吸收，2026-10-06 H-017）
 
-覆盖第 2 步独立初稿与第 3 步辩证发言。思想来源：FORCED-REASONING 论文（arXiv 2609.26637；编号与原文尚未独立核实，引用前请先核对），洁净室转写（机制用自己的话，不引原文）。
+覆盖第 2 步独立初稿与第 3 步辩证发言。思想来源：arXiv 2609.26637《Capable yet Parsimonious: Extracting and Characterizing Hidden Chain-of-Thought in Frontier Models》（2026-09-22；独立评估 2026-10-26 已核实：论文第 3 节定义 Forced-Reasoning protocol，附录 D.1.2 的 think-here 工具描述即本条句式的出处），洁净室转写（机制用自己的话，不引原文）。
 
 1. **think-here 句式**：每个视角在自己的发言空间里把问题想透——在这片发言空间里把问题想清楚，而不是在别处想好再回来描述结论。想的过程发生在本段，不许"别处想好、这里只贴结论"。
 2. **只外化关键推理**：省 token 靠**少写推理步骤**，不是把句子写短。每段发言只外化：结论一句话＋关键推理链（≤3 步）＋每步证据等级。中间的试探性推导、被否决的分支一律不外化。
@@ -198,6 +198,7 @@ CEO 对裁决书做 维持 / 修改 / 推翻 的终裁，输出决策记录（�
 - credits: live-panel-skill (MIT) 思想吸收
 
 ## Changelog
+- 2026-10-27 v1.0.4：frontmatter 对齐 Agent Skills 规范（自定义字段移入 `metadata`，触发词与英文摘要写进 `description`）；arXiv 引用改为已核实表述；协议步骤无变更。
 - 2026-10-27 v1.0.3：第 -2 步移到工作流最前；统一去向口径（②④ 法务通道，①③ CEO/董事长通道）；花钱事项写清"可辩论、只出建议、付款执行属硬保留"；新增反例回归 `evals/smoke-02.md`。
 - 2026-10-26 v1.0.2：新增第 -2 步"不得代裁闸门"，并在治理铁律写明"意见为建议"规则不覆盖不得代裁四条（此前该规则只在 `references/three-teams.md`，工作流未执行，smoke-01 因此漏判）；推理外化纪律去掉逐字英文引文，改为转述，并标注来源未核实。
 - 2026-10-06 v1.0.1：第 4.5 步补齐优先级/品味冲突找人要素（CEO 终裁＋GC 会签事后备案，超期升级）。

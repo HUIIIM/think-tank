@@ -1,0 +1,10 @@
+{
+  "name": "think-tank",
+  "version": "1.0.4",
+  "description": "Structured red/blue/white-team debate for a real pending decision, ending in a CEO verdict and a D-numbered decision record. Single-skill plugin: SKILL.md at the repository root.",
+  "author": { "name": "Jiahui Miao", "url": "https://vertciti.com" },
+  "homepage": "https://github.com/HUIIIM/think-tank",
+  "repository": "https://github.com/HUIIIM/think-tank",
+  "license": "MIT",
+  "keywords": ["decision-making", "debate", "red-team", "skill"]
+}
