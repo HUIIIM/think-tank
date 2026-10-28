@@ -6,7 +6,7 @@ strategic or cross-domain calls.
 
 | | |
 |---|---|
-| Status | active — v1.0.4 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all blocking in CI), dry-runs in `evals/smoke-01.md` and `evals/smoke-02.md` (non-delegable gate); no unit tests |
+| Status | active — v1.0.4 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all blocking in CI), dry-runs in `evals/smoke-01.md` and `evals/smoke-02.md` (non-delegable gate); negative-fixture tests for the SKILL.md validator (`scripts/test_validate_skill.py`) |
 | Type | vertciti skill (agent skill defined in [SKILL.md](SKILL.md)) |
 | Install / use | Load `SKILL.md` as a skill in your agent; try the zero-dependency demo with `python3 demo/run.py --topic "..."` |
 | Licence | MIT ([LICENSE](LICENSE)), Copyright (c) 2026 Jiahui Miao |

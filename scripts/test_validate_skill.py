@@ -20,6 +20,12 @@ VALIDATOR = ROOT / "scripts" / "validate_skill.py"
 COPY = ["SKILL.md", ".claude-plugin", "references", "evals", "demo", "docs", "scripts"]
 
 Mutation = Callable[[Path], None]
+# Fixture copies live in a directory named after the skill (the spec requires name == directory),
+# so the suite also runs from a clone or worktree with a different directory name.
+_m = re.search(
+    r"^name: *\"?([^\"\n]+)\"?$", (ROOT / "SKILL.md").read_text(encoding="utf-8"), re.M
+)
+SKILL_NAME = _m.group(1) if _m else ROOT.name
 
 
 def sub_skill(pattern: str, repl: str) -> Mutation:
@@ -98,14 +104,29 @@ CASES: list[tuple[str, Mutation, str]] = [
         "allowed-tools must be",
     ),
     (
-        "description over 1024 chars",
-        sub_skill(r'^description: "', 'description: "' + "x" * 1100),
+        "description of 1025 chars",
+        sub_skill(r'^description: ".*"$', 'description: "' + "x" * 1025 + '"'),
         "description must be 1-1024",
     ),
     (
         "missing scripts/ reference",
         sub_skill(r"^## 输出契约$", "## 输出契约\n\n见 `scripts/missing.py`。"),
         "referenced file missing: scripts/missing.py",
+    ),
+    (
+        "missing assets/ reference",
+        sub_skill(r"^## 输出契约$", "## 输出契约\n\n见 `assets/missing.png`。"),
+        "referenced file missing: assets/missing.png",
+    ),
+    (
+        "compatibility not a string",
+        sub_skill(r"^license: MIT$", "license: MIT\ncompatibility: [claude-code]"),
+        "compatibility must be",
+    ),
+    (
+        "body over 500 lines",
+        sub_skill(r"^## Changelog$", "## Changelog\n" + "x\n" * 501),
+        "SKILL.md body is",
     ),
     (
         "plugin.json version drift",
@@ -126,7 +147,7 @@ def run(root: Path) -> tuple[int, str]:
 
 
 def fresh(base: Path) -> Path:
-    root = base / ROOT.name
+    root = base / SKILL_NAME
     if root.exists():
         shutil.rmtree(root)
     root.mkdir()

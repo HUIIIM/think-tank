@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Validate SKILL.md against the Agent Skills spec (https://agentskills.io/specification).
 
+The spec requires `name` to equal the skill directory name, so run it on a checkout
+whose directory is named after the skill (CI checks out into `think-tank`).
+
 Checks: frontmatter keys, name format, description length, metadata is a string map,
 body under 500 lines, and that referenced in-repo files exist. Exit 1 on any error.
 Requires PyYAML.
