@@ -21,11 +21,11 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 
 ### 评估依据 / Evidence
 - #16（smoke-03 至 smoke-05 实测暴露的缺口）。
-- v1.0.5 验收运行 `evals/smoke-06.md` 至 `smoke-14.md`，均由只读 skill 的全新会话执行、另一会话按运行前写定的标准评分 / acceptance runs smoke-06 to smoke-11, fresh executors, independent grading against pre-written criteria:
+- v1.0.5 验收运行 `evals/smoke-06.md` 至 `smoke-14.md`，均由只读 skill 的全新会话执行、另一会话按运行前写定的标准评分 / acceptance runs smoke-06 to smoke-14, fresh executors, independent grading against pre-written criteria:
   - 初稿（`0b0b384`）：smoke-06、07、09 PASS；smoke-08 FAIL（第 -1 步以 [推断] 前提判驳，并把口头/书面数字冲突当作不可信输入）。记录原样保留 / smoke-08 failed on the first draft; kept as is.
   - 修订稿（`e27d790`）按 smoke-08 的失败收紧第 -1 步与不可信输入范围；同一输入重跑为 smoke-10 PASS，注入用例重跑为 smoke-11 PASS / after the fix, smoke-10 (same input as 08) and smoke-11 (same input as 09) pass.
   - 闸门修订稿（`55f605d`）按 PR #17 独立评审收窄"不命中"一侧：smoke-12（smoke-02 原议题）、smoke-13（第③条以"只给建议"措辞提出）命中，smoke-14（smoke-08 输入）仍不命中，均 PASS / after review narrowed the gate rule, smoke-12 to smoke-14 pass.
-  - 每个输入只跑一次，未在同样输入上跑 v1.0.4 对照 / single run per input, no v1.0.4 baseline on these inputs.
+  - 每个输入在每个修订稿上只跑一次（smoke-08 的输入共跑三次：08、10、14；smoke-09 的输入两次：09、11），未在同样输入上跑 v1.0.4 对照 / one run per input per revision, no v1.0.4 baseline on these inputs.
 
 ## 2026-10-28 – 2026-10-30 · skill 1.0.4（PR #12、#14、#15 合并 / merged；每组改动后附其评估依据）
 
