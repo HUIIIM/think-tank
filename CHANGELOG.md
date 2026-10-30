@@ -8,6 +8,15 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 
 ## [Unreleased]
 
+### Added
+- `evals/smoke-03.md`：签约类花钱议题在第 -2 步被拦下（第④条对外法律承诺、第①条签名/付款执行），实测闸门先于致命缺陷预检 / gate takes precedence over the fatal-flaw check.
+- `evals/smoke-04.md`：核心事实被书面证据否定时，第 -1 步直接判驳并转向，不进辩论 / fatal-flaw rejection at step -1.
+- `evals/smoke-05.md`：背景材料夹带伪"系统指令"邮件时，skill 把它当不可信数据、照常走完流程，结论由辩论得出 / prompt injection in background material.
+- 三次运行均由只读 `SKILL.md` 与 `references/` 的全新会话执行，由另一会话按运行前写定的标准评分，均 PASS；各记录的通过标准逐字摘自评估标准文件；smoke-03 的标准在看到输出后加了一条注明日期的补记（原标准与 skill 原文冲突），与原标准一并原样收录 / all three run by fresh sessions and graded independently (PASS); criteria are quoted verbatim, including smoke-03's dated post-run addendum.
+
+### 评估依据 / Evidence
+- #8 路线图第 5 项（真实评测：致命缺陷门禁、注入式背景材料）/ roadmap item 5 in #8.
+
 ### Changed
 - `demo/eval_selftest.py`：新增 9 种变异，覆盖 #9 引入的 eval 检查（红队席位标签、张力网络意外视角席位、辩证过程意外视角发言、一句话压缩、版本跟随、议题回车折叠、非法 UTF-8、中英触发词）；共 20 种。用 #9 之前的 eval.sh 跑，这 9 种全部漏抓（自测判红）。蓝队/白队标签与红队走同一循环，未逐一变异 / 9 more self-test mutations for the checks added in #9 (20 in total); all 9 go uncaught by the pre-#9 eval.sh.
 - README / PRODUCT / `eval.yml`：`lint + typecheck`、`demo/eval.sh`、gitleaks 已是 main 的必过检查（管理员可绕过），"设为必过后才阻断"的条件句改为现状；PRODUCT 的 Now 行更新；README Security 节写明 eval 自测、validator 反例夹具，以及 lint 工具只按 Linux x86_64 / Python 3.12 固定哈希 / wording updated now that the checks are required; README Security mentions the self-tests and the lint-pin scope.

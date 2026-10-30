@@ -6,7 +6,7 @@ strategic or cross-domain calls.
 
 | | |
 |---|---|
-| Status | active — v1.0.4 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all run in CI on every PR and are required status checks on `main`, together with gitleaks; admins can bypass them), dry-runs in `evals/smoke-01.md` and `evals/smoke-02.md` (non-delegable gate); negative-fixture tests for the SKILL.md validator (`scripts/test_validate_skill.py`); `demo/eval_selftest.py` checks that the smoke check catches known-bad edits |
+| Status | active — v1.0.4 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all run in CI on every PR and are required status checks on `main`, together with gitleaks; admins can bypass them), dry-runs in `evals/smoke-01.md` to `evals/smoke-05.md`: smoke-01 (full debate) is self-graded by the executor; smoke-02 (non-delegable gate) was run by a fresh session that saw only the skill; smoke-03 to smoke-05 (gate precedence over the fatal-flaw check, fatal-flaw rejection, prompt injection in background material) were run by fresh sessions and graded by a separate session against written criteria (smoke-03's criteria carry an addendum written after its run, kept as is); negative-fixture tests for the SKILL.md validator (`scripts/test_validate_skill.py`); `demo/eval_selftest.py` checks that the smoke check catches known-bad edits |
 | Type | vertciti skill (agent skill defined in [SKILL.md](SKILL.md)) |
 | Install / use | Load `SKILL.md` as a skill in your agent; try the zero-dependency demo with `python3 demo/run.py --topic "..."` |
 | Licence | MIT ([LICENSE](LICENSE)), Copyright (c) 2026 Jiahui Miao |
@@ -61,7 +61,8 @@ recorded in [`evals/smoke-01.md`](evals/smoke-01.md).
 SKILL.md      the skill: debate protocol, input and output contracts
 demo/         topic -> demo/output/decision-draft.md (skeleton) + eval.sh
 references/   three-team charter, decision-record template
-evals/        dry-run records: smoke-01 (full debate), smoke-02 (non-delegable gate)
+evals/        dry-run records: smoke-01 (full debate), smoke-02 (non-delegable gate), smoke-03 (gate precedence),
+              smoke-04 (fatal-flaw rejection), smoke-05 (prompt injection in background material)
 docs/         product one-pager
 scripts/      validate_skill.py (Agent Skills spec check) + test_validate_skill.py (fixtures)
 .claude-plugin/  plugin.json, so the repo installs as a single-skill Claude Code plugin
