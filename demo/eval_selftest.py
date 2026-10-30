@@ -47,6 +47,10 @@ MUTATIONS = [
      'a.topic.encode("utf-8", "surrogateescape").decode("utf-8", "replace")', "a.topic"),
     ("description 删去中文触发词", "SKILL.md",
      '说\\"上智囊团\\"\\"智囊团\\"', '说\\"智囊团\\"'),
+    ("run.py 只折叠换行、不折叠回车", "demo/run.py",
+     '.decode("utf-8", "replace").split()\n)', '.decode("utf-8", "replace").replace("\\n", " ").split(" ")\n)'),
+    ("run.py 张力网络删去意外视角席位", "demo/run.py",
+     "- 意外视角（[角色，领域之外]）：[一句话立场]\n", ""),
     ("description 删去英文触发词", "SKILL.md",
      '\\"think tank\\"', ""),
 ]
