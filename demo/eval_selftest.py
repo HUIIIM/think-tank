@@ -34,6 +34,25 @@ MUTATIONS = [
      "## 总协调裁决书", "## 总协调建议"),
     ("run.py 去掉换行处理", "demo/run.py",
      '.decode("utf-8", "replace").split()\n)', '.decode("utf-8", "replace").split(" ")\n)'),
+    # 以下覆盖 #9 引入的 eval 检查（席位标签、辩证过程、一句话、版本跟随、触发词、非法 UTF-8）
+    ("run.py 红队标签改回旧写法", "demo/run.py",
+     "- 红队（质疑/风险视角）：", "- 红队（激进立场）："),
+    ("run.py 辩证过程删去意外视角发言", "demo/run.py",
+     "- 意外视角 [补充]：…　一句话：…\n", ""),
+    ("run.py 红队发言去掉一句话压缩", "demo/run.py",
+     "- 红队 [陈述]：…　一句话：…", "- 红队 [陈述]：…"),
+    ("run.py 版本号写死", "demo/run.py",
+     "v{skill_version()}", "v1.0.4"),
+    ("run.py 去掉非法 UTF-8 处理", "demo/run.py",
+     'a.topic.encode("utf-8", "surrogateescape").decode("utf-8", "replace")', "a.topic"),
+    ("description 删去中文触发词", "SKILL.md",
+     '说\\"上智囊团\\"\\"智囊团\\"', '说\\"智囊团\\"'),
+    ("run.py 只折叠换行、不折叠回车", "demo/run.py",
+     '.decode("utf-8", "replace").split()\n)', '.decode("utf-8", "replace").replace("\\n", " ").split(" ")\n)'),
+    ("run.py 张力网络删去意外视角席位", "demo/run.py",
+     "- 意外视角（[角色，领域之外]）：[一句话立场]\n", ""),
+    ("description 删去英文触发词", "SKILL.md",
+     '\\"think tank\\"', ""),
 ]
 
 
