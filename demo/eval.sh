@@ -89,7 +89,7 @@ sha() { if command -v sha256sum >/dev/null 2>&1; then sha256sum; else shasum -a 
 pin() {  # pin <名称> <期望指纹> <实际指纹>
   [ "$2" = "$3" ] || { echo "  受保护文本被改动：$1（实际指纹 $3；确属有意修改，请在同一提交中更新 demo/eval.sh 的指纹）"; ok=0; }
 }
-pin "SKILL.md 治理铁律＋第 -2 步闸门" "3a2326b4a60365ce8555ab9eb64d64df40cb47b330ec9e38b95994f7ec3d4635" \
+pin "SKILL.md 治理铁律＋第 -2 步闸门" "616164d43da333ac9bc83aa8b6199bf5a95b5f4b936c795f2ace1a9d09cd8f72" \
   "$(nocr "$ROOT/SKILL.md" | sed -n '/^## 治理铁律/,/^### 第 -0.5 步/p' | sha)"
 pin "references/three-teams.md 不得代裁四条" "055bebd5d4fd1f6dc7e5e6067f8ae2acece8ba508d030910b021da03347cd375" \
   "$(nocr "$ROOT/references/three-teams.md" | sed -n '/^## 不得代裁四条/,/^## 意外视角/p' | sha)"

@@ -1,6 +1,6 @@
 # think-tank（智囊团辩证决策）— 产品一页纸
 
-> 状态：active · 版本：1.0.4（`SKILL.md` frontmatter `metadata.version`；尚无 git tag）· 更新：2026-10-27
+> 状态：active · 版本：1.0.5（`SKILL.md` frontmatter `metadata.version`；尚无 git tag）· 更新：2026-10-30
 > 所属：[vertciti](https://vertciti.com) — 一家公司，一个人生。
 
 ## 一句话
@@ -50,7 +50,7 @@
 ## 路线图
 | 阶段 | 内容 | 退出标准 |
 |---|---|---|
-| Now | 维持当前协议（v1.0.4 改了 frontmatter 和一处引用，协议步骤不变）；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
+| Now | v1.0.5 落实 #16 的协议缺口（不可信输入、闸门判定口径、出口先后、终裁稿）；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
 | Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 | Later | 决策记录归档索引：按主题/结论检索 记录编号（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 

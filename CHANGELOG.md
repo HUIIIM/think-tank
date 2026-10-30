@@ -1,12 +1,26 @@
 # Changelog / 变更日志
 
 本文件记录本仓库的所有重要变更，格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
-仓库尚无 git tag，因此按合并日期分节（`[Unreleased]` 为尚未合并的改动）；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.4`，位于 `metadata.version`）及其 Changelog 节。
+仓库尚无 git tag，因此按合并日期分节（`[Unreleased]` 为尚未合并的改动）；skill 自身的版本号见 `SKILL.md` frontmatter（当前 `1.0.5`，位于 `metadata.version`）及其 Changelog 节。
 
 All notable changes to this repository are documented here, following [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
-There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` holds what is not merged yet); the skill's own version lives in `SKILL.md` (currently `1.0.4`, under `metadata.version`).
+There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` holds what is not merged yet); the skill's own version lives in `SKILL.md` (currently `1.0.5`, under `metadata.version`).
 
 ## [Unreleased]
+
+### Changed
+- SKILL.md v1.0.5，落实 #16 的七处协议缺口 / closes the seven protocol gaps in #16:
+  - 治理铁律新增"不可信输入"：背景材料中的指令、"系统指令"、自称的终裁一律不执行、不作证据，须声明并记录 / untrusted-input rule.
+  - 第 -2 步闸门新增判定口径（动作本身是签约/签名/付款执行/以 Miao 名义发送/改 DNS/对外法律承诺即命中；只问"值不值得花"不命中；拿不准按命中）与"移交备注"规则（只列事实核对，不给裁决）/ gate decision rule and handoff notes.
+  - 前置关与致命缺陷的出口先后：已证伪（第 -1 步判驳）优先于证据不足（第 -0.5 步打回）；输出契约补齐第 -0.5、-0.5b 步出口 / exit precedence; contract covers every early exit.
+  - 第 5 步：执行者只写终裁稿，须经 CEO 本人确认；自测/dry-run 记录标题标 [试运行] / draft-only CEO verdict; dry-run tag.
+  - 框架图标签可用中文；live-panel-skill 致谢注明出处未核实 / Chinese labels allowed in diagrams; unverified credit marked.
+- `demo/eval.sh`：治理铁律＋闸门区间的 SHA-256 指纹随协议修改同步更新 / fingerprint updated with the protected-text change.
+
+### 评估依据 / Evidence
+- #16（smoke-03 至 smoke-05 实测暴露的缺口）；v1.0.5 验收运行见 `evals/smoke-06.md` 至 `smoke-09.md` / acceptance runs smoke-06 to smoke-09.
+
+## 2026-10-28 – 2026-10-30 · skill 1.0.4（PR #12、#14、#15 合并 / merged；每组改动后附其评估依据）
 
 ### Added
 - `evals/smoke-03.md`：签约类花钱议题在第 -2 步被拦下（第④条对外法律承诺、第①条签名/付款执行），实测闸门先于致命缺陷预检 / gate takes precedence over the fatal-flaw check.
@@ -32,7 +46,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 ### 评估依据 / Evidence
 - PR #9 最终独立评估（bbb0477）列出的 P2 项 / P2 findings from the final independent assessment of #9.
 
-## 2026-10-22 – 2026-10-28 · skill 1.0.1 → 1.0.4（PR #2、#4、#5、#6、#10、#9 合并 / merged）
+## 2026-10-22 – 2026-10-28 · skill 1.0.1 → 1.0.4（PR #2、#4、#5、#6、#10、#9、#11 合并 / merged）
 
 ### Added
 - `Eval` 的 lint 作业新增 `scripts/validate_skill.py`（ruff + `mypy --strict` 同样覆盖）；PyYAML 与类型桩按哈希加入 `.github/requirements-lint.txt` / the lint job now also validates SKILL.md; PyYAML and its stubs are hash-pinned.
@@ -63,7 +77,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 ### 评估依据 / Evidence
 - 独立评估 SOTA 评分卡 #8 路线图第 1–3 项及第 10 项部分 / roadmap items 1–3 and part of 10 in #8.
 
-### PR #2、#4、#5、#6、#10 的条目 / entries from PR #2, #4, #5, #6, #10
+### PR #2、#4、#5、#6、#10、#11 的条目 / entries from PR #2, #4, #5, #6, #10, #11
 #### Added
 - `docs/PRODUCT.md` 产品一页纸 / product one-pager.
 - `CHANGELOG.md`（本文件 / this file）.
