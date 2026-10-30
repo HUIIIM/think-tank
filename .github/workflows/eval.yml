@@ -1,5 +1,5 @@
-# Checks on every PR and on pushes to main (SOTA VER-1). They block merges only
-# once both jobs are required status checks on main (repo settings).
+# Checks on every PR and on pushes to main (SOTA VER-1). Both jobs are required status
+# checks on main (with gitleaks); admins can still bypass them (enforcement: non_admins).
 # Lint: shellcheck + ruff + mypy + SKILL.md spec validation; eval: demo/eval.sh and its
 # self-test demo/eval_selftest.py.
 name: Eval

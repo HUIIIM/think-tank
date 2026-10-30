@@ -35,7 +35,7 @@
 （以上来自 `SKILL.md` "与通用 roundtable 的四点区别"，为设计意图描述，未做对比评测。）
 
 ## 证据
-- 测试：SKILL.md 校验器有反例夹具测试（`scripts/test_validate_skill.py`）；demo 无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）连同 shellcheck、ruff、`mypy --strict`、SKILL.md 规范校验（`scripts/validate_skill.py`）及其反例夹具（`scripts/test_validate_skill.py`），由 CI `Eval` 工作流在每个 PR 和推到 main 的 push 上运行（设为 main 的必过检查后才真正阻断合并）；`evals/smoke-02.md` 是不得代裁闸门的反例回归，它和 SKILL.md 闸门、three-teams.md 不得代裁四条一起由 SHA-256 指纹保护（只能发现区间内的改动，不能判断含义）；`demo/eval_selftest.py` 在 CI 里验证 eval 能抓到 11 种已知篡改；另有 gitleaks 与 Scorecard 工作流。
+- 测试：SKILL.md 校验器有反例夹具测试（`scripts/test_validate_skill.py`）；demo 无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）连同 shellcheck、ruff、`mypy --strict`、SKILL.md 规范校验（`scripts/validate_skill.py`）及其反例夹具（`scripts/test_validate_skill.py`），由 CI `Eval` 工作流在每个 PR 和推到 main 的 push 上运行（`lint + typecheck`、`demo/eval.sh` 与 gitleaks 已是 main 的必过检查，管理员仍可绕过）；`evals/smoke-02.md` 是不得代裁闸门的反例回归，它和 SKILL.md 闸门、three-teams.md 不得代裁四条一起由 SHA-256 指纹保护（只能发现区间内的改动，不能判断含义）；`demo/eval_selftest.py` 在 CI 里验证 eval 能抓到 18 种已知篡改；另有 gitleaks 与 Scorecard 工作流。
 - 真实运行：`evals/smoke-01.md` —— 一次真实待决策事项的完整 dry-run 记录（议题："是否把 trust-rule 式 lasting allow 机制排进 10-18 开发计划"），自评结论 PASS，终裁"改"——2026-10-26 复核：该议题命中"不得代裁四条"第 1 条，本不应进辩论，PASS 只证明流程可跑；demo 草稿在本地生成到 `demo/output/decision-draft.md`（git 忽略，不入库）。
 - 不能证明的：辩论质量与决策质量的提升没有量化评估；smoke-01 为单次自测、由执行者自评；没有运行录屏/截图。
 
@@ -50,7 +50,7 @@
 ## 路线图
 | 阶段 | 内容 | 退出标准 |
 |---|---|---|
-| Now | 维持当前协议（v1.0.4 改了 frontmatter 和一处引用，协议步骤不变）；把 `Eval` 设为 main 的必过检查 | 未确认（TBD） |
+| Now | 维持当前协议（v1.0.4 改了 frontmatter 和一处引用，协议步骤不变）；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
 | Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 | Later | 决策记录归档索引：按主题/结论检索 记录编号（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 

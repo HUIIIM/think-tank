@@ -9,6 +9,13 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 ## [Unreleased]
 
 ### Changed
+- `demo/eval_selftest.py`：新增 7 种变异，覆盖 #9 引入的 eval 检查（席位标签、辩证过程意外视角发言、一句话压缩、版本跟随、非法 UTF-8、中英触发词）；共 18 种。用 #9 之前的 eval.sh 跑，这 7 种全部漏抓（自测判红）/ 7 more self-test mutations for the checks added in #9 (18 in total); all 7 go uncaught by the pre-#9 eval.sh.
+- README / PRODUCT / `eval.yml`：`lint + typecheck`、`demo/eval.sh`、gitleaks 已是 main 的必过检查（管理员可绕过），"设为必过后才阻断"的条件句改为现状；PRODUCT 的 Now 行更新；README Security 节写明 eval 自测、validator 反例夹具，以及 lint 工具只按 Linux x86_64 / Python 3.12 固定哈希 / wording updated now that the checks are required; README Security mentions the self-tests and the lint-pin scope.
+
+### 评估依据 / Evidence
+- #13（#11 最终独立评估的非阻断项）/ #13, follow-ups from the final independent review of #11.
+
+### Changed
 - `scripts/validate_skill.py`：`.claude-plugin/plugin.json` 的 `name` 也须等于 SKILL.md `name` / plugin.json name must match the skill name.
 - `scripts/test_validate_skill.py`：新增 name 连字符规则、缺 description 键、plugin.json name 漂移等反例，以及三个必须通过的边界用例（description 恰好 1024 字、正文恰好 500 行、未加引号的 `metadata.version`）；共 32 个 / more negative fixtures plus passing edge cases (32 in total).
 - README 仓库结构列出 `scripts/`、`.claude-plugin/` 与两份 evals；PRODUCT.md 的安全小节引用改为 `## Security` / README layout and PRODUCT.md cross-reference brought up to date.
