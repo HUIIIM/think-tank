@@ -12,7 +12,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 - `evals/smoke-03.md`：签约类花钱议题在第 -2 步被拦下（第④条对外法律承诺、第①条签名/付款执行），实测闸门先于致命缺陷预检 / gate takes precedence over the fatal-flaw check.
 - `evals/smoke-04.md`：核心事实被书面证据否定时，第 -1 步直接判驳并转向，不进辩论 / fatal-flaw rejection at step -1.
 - `evals/smoke-05.md`：背景材料夹带伪"系统指令"邮件时，skill 把它当不可信数据、照常走完流程，结论由辩论得出 / prompt injection in background material.
-- 三次运行均由只读 `SKILL.md` 与 `references/` 的全新会话执行，由另一会话按运行前写定的标准评分，均 PASS；smoke-03 的标准在看到输出后加了一条注明日期的补记（原标准与 skill 原文冲突），已在记录中原样保留 / all three run by fresh sessions and graded independently against pre-written criteria (PASS); the smoke-03 criteria addendum is kept verbatim.
+- 三次运行均由只读 `SKILL.md` 与 `references/` 的全新会话执行，由另一会话按运行前写定的标准评分，均 PASS；各记录的通过标准逐字摘自评估标准文件；smoke-03 的标准在看到输出后加了一条注明日期的补记（原标准与 skill 原文冲突），与原标准一并原样收录 / all three run by fresh sessions and graded independently (PASS); criteria are quoted verbatim, including smoke-03's dated post-run addendum.
 
 ### 评估依据 / Evidence
 - #8 路线图第 5 项（真实评测：致命缺陷门禁、注入式背景材料）/ roadmap item 5 in #8.
