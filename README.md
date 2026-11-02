@@ -65,7 +65,8 @@ evals/        dry-run records: smoke-01 (full debate), smoke-02 (non-delegable g
               smoke-04 (fatal-flaw rejection), smoke-05 (prompt injection in background material),
               smoke-06 to smoke-14 (v1.0.5 acceptance runs, incl. one recorded FAIL and its re-run)
 docs/         product one-pager
-scripts/      validate_skill.py (Agent Skills spec check) + test_validate_skill.py (fixtures)
+scripts/      validate_skill.py (Agent Skills spec check) + test_validate_skill.py (fixtures);
+              review_due.py (decision records due for review) + test_review_due.py (fixtures)
 .claude-plugin/  plugin.json, so the repo installs as a single-skill Claude Code plugin
 ```
 
