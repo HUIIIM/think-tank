@@ -8,7 +8,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 COPY = ["SKILL.md", "references", "evals", "demo"]
-CRLF_FILES = ["SKILL.md", "references/three-teams.md", "evals/smoke-02.md"]
+CRLF_FILES = ["SKILL.md", "references/three-teams.md", "evals/smoke-02.md", "evals/smoke-03.md",
+              "evals/smoke-10.md", "evals/smoke-12.md", "evals/smoke-13.md"]
 
 # (名称, 文件, 原文, 替换文本)：每条都必须让 eval FAIL
 MUTATIONS = [
@@ -53,7 +54,27 @@ MUTATIONS = [
      "- 意外视角（[角色，领域之外]）：[一句话立场]\n", ""),
     ("description 删去英文触发词", "SKILL.md",
      '\\"think tank\\"', ""),
+    # 以下覆盖 #17（v1.0.5）的修复：前置关出口、致命缺陷证据标准、终裁稿、输出契约出口、回归记录
+    ("删去「前置关不过不是致命缺陷」", "SKILL.md",
+     '前置关不过本身不是致命缺陷，也不得作为判"驳"的依据：', ""),
+    ("致命缺陷证据标准改为参考", "SKILL.md",
+     '**"被证据确认"的标准**', '**"被证据确认"的参考**'),
+    ("终裁稿改为可直接终裁", "SKILL.md",
+     "只能写 CEO 终裁稿", "可直接写 CEO 终裁"),
+    ("输出契约改写 -0.5b 出口", "SKILL.md",
+     "第 -0.5b 步撞硬约束红线", "第 -0.5b 步可能撞到硬约束红线"),
+    ("smoke-10 结论翻转", "evals/smoke-10.md",
+     "**结论：PASS（6/6）。**", "**结论：FAIL（0/6）。**"),
+    ("smoke-12 结论翻转", "evals/smoke-12.md",
+     "**结论：PASS（2/2）。**", "**结论：FAIL（0/2）。**"),
+    ("smoke-13 结论翻转", "evals/smoke-13.md",
+     "**结论：PASS（2/2）。**", "**结论：FAIL（0/2）。**"),
+    ("smoke-03 闸门结论翻转", "evals/smoke-03.md",
+     "**结论：不进辩论。**", "**结论：照常进入辩论。**"),
 ]
+
+# 删掉即必须 FAIL 的回归记录
+DELETIONS = ["evals/smoke-02.md", "evals/smoke-03.md", "evals/smoke-10.md", "evals/smoke-12.md", "evals/smoke-13.md"]
 
 
 def run_eval(tree: Path) -> int:
@@ -106,11 +127,18 @@ def main() -> int:
                 print(f"FAIL: 变异「{name}」没有被 eval 抓到")
                 failures += 1
 
-    total = 2 + len(MUTATIONS)
+        for f in DELETIONS:
+            tree = fresh_copy(base)
+            (tree / f).unlink()
+            if run_eval(tree) == 0:
+                print(f"FAIL: 删除 {f} 没有被 eval 抓到")
+                failures += 1
+
+    total = 2 + len(MUTATIONS) + len(DELETIONS)
     if failures:
         print(f"eval 自测 FAIL：{failures}/{total} 项不符合预期")
         return 1
-    print(f"eval 自测 PASS：{total} 项全部符合预期（未改动与 CRLF 判 PASS，{len(MUTATIONS)} 种变异判 FAIL）")
+    print(f"eval 自测 PASS：{total} 项全部符合预期（未改动与 CRLF 判 PASS，{len(MUTATIONS)} 种变异与 {len(DELETIONS)} 处删除判 FAIL）")
     return 0
 
 
