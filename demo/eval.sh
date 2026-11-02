@@ -82,7 +82,7 @@ nocr() { sed $'s/\r$//' "$1"; }
 first_step="$(nocr "$ROOT/SKILL.md" | sed -n '/^## 工作流/,/^## 输出契约/p' | grep -m1 '^### ')"
 case "$first_step" in "### 第 -2 步：不得代裁闸门（强制，先于一切步骤）") ;; *) echo "  工作流第一步不是不得代裁闸门：$first_step"; ok=0 ;; esac
 # 受保护文本的 SHA-256 指纹（PINS 表）：SKILL.md 治理铁律到第 -1 步（闸门、前置关出口、致命缺陷标准）、
-# 第 5 步终裁稿规则、输出契约；three-teams.md 不得代裁四条；闸门与出口修复的回归记录 evals/smoke-*.md。
+# 第 5 步终裁稿规则、输出契约；three-teams.md 不得代裁四条；闸门与出口修复的回归记录 evals/smoke-02/03/10/12/13（其余 smoke 记录无指纹）。
 # 这只能发现这些区间内的"改动"，不能判断改动的含义：区间内任何改动都会 FAIL，
 # 必须在同一次提交里更新 PINS 表，评审时一眼可见。区间外的文字不检查——只能靠评审。
 sha() { if command -v sha256sum >/dev/null 2>&1; then sha256sum; else shasum -a 256; fi | cut -d' ' -f1; }

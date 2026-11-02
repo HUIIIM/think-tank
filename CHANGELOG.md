@@ -19,7 +19,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
   - 框架图标签可用中文；live-panel-skill 致谢注明出处未核实 / Chinese labels allowed in diagrams; unverified credit marked.
 - `demo/eval.sh`：治理铁律＋闸门区间的 SHA-256 指纹随协议修改同步更新 / fingerprint updated with the protected-text change.
 - `demo/eval.sh` 指纹扩展（关闭 #17 独立评估 FAIL：ARCH-3、VER-2）：SKILL.md 指纹区间从"治理铁律＋闸门"扩到第 -0.5 步出口与第 -1 步证据标准（`## 治理铁律`…`### 第 -0.5b 步`），新增第 5 步终裁稿规则、输出契约两段；回归记录 smoke-03/10/12/13 与 smoke-02 一样全文加指纹。改为 PINS 表统一校验。仍只能发现区间内的改动，不能判断含义 / fingerprints now cover the step -0.5 exits, the step -1 evidence standard, the step 5 draft-verdict rule, the output contract and the smoke-03/10/12/13 records.
-- `demo/eval_selftest.py`：新增 8 种变异（删掉"前置关不过不是致命缺陷"、证据标准、终裁稿规则、-0.5b 出口、四份回归记录结论翻转）和 5 处删除（回归记录文件）；在 #17 合并后的 eval.sh 上自测判红（漏抓 12/35），新版 35/35 判绿 / 8 new mutations + 5 deletions; red on the previous eval.sh (12/35 missed), green now (35/35).
+- `demo/eval_selftest.py`：新增 8 种变异（删掉"前置关不过不是致命缺陷"；把证据标准、终裁稿规则、输出契约 -0.5b 出口改写；四份回归记录结论翻转）和 5 处删除（smoke-02/03/10/12/13，其中 smoke-02 旧版已能抓到）；在 #17 合并后的 eval.sh 上自测判红（漏抓 12/35），新版 35/35 判绿 / 8 new mutations + 5 deletions; red on the previous eval.sh (12/35 missed), green now (35/35).
 
 ### 评估依据 / Evidence
 - #16（smoke-03 至 smoke-05 实测暴露的缺口）。
