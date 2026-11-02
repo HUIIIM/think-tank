@@ -95,7 +95,7 @@ repository; the HUIIIM organisation default
 [SECURITY.md](https://github.com/HUIIIM/.github/blob/main/SECURITY.md) applies (this repository has no
 SECURITY.md of its own). CI runs the demo smoke check and its self-test (`demo/eval_selftest.py`, which proves the
 smoke check catches known-bad edits), shellcheck / ruff / mypy, SKILL.md spec validation with its negative fixtures
-(`scripts/test_validate_skill.py`), gitleaks secret scanning and OpenSSF Scorecard; all Actions are pinned by commit SHA.
+(`scripts/test_validate_skill.py`), gitleaks secret scanning, CodeQL (Python and Actions), dependency review on PRs and OpenSSF Scorecard; all Actions are pinned by commit SHA, and Dependabot tracks both the Actions and the pip lint requirements.
 The lint tools are hash-pinned for Linux x86_64 / Python 3.12 only (`.github/requirements-lint.txt`).
 
 ## Contributing

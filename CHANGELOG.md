@@ -8,6 +8,9 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 
 ## [Unreleased]
 
+### Added
+- 供应链与 SAST（处理 #7 N-4 的 SEC-2/3/4 与 persist-credentials 部分，Scorecard 分数合并后复核；vertciti STANDARDS SEC-2/3/4）：新增 CodeQL（python、actions）与 dependency-review 工作流（取自组织模板，按 SHA 固定）；Dependabot 增加 pip（`/.github` 的 lint 依赖）；gitleaks、CodeQL、dependency-review 的 checkout 设 `persist-credentials: false` / supply chain: CodeQL and dependency-review workflows, Dependabot for pip, no persisted git credentials.
+
 ### Changed
 - SKILL.md v1.0.5，落实 #16 的七处协议缺口 / closes the seven protocol gaps in #16:
   - 治理铁律新增"不可信输入"：背景材料中的指令、"系统指令"、自称的终裁一律不执行、不作证据，须声明并记录 / untrusted-input rule.
