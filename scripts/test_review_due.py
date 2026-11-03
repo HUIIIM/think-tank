@@ -50,6 +50,22 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     ),
     "bold value": ({"a.md": record("TT-1", review="**2026-11-30**", status="**已取代（→ TT-9）**")}, [], 0, set(), set()),
     "code value": ({"a.md": record("TT-1", review="`2026-11-30`")}, [], 0, {"TT-1"}, set()),
+    "level-1 heading": ({"a.md": record("TT-1").replace("## ", "# ", 1)}, [], 0, {"TT-1"}, set()),
+    "level-3 heading": ({"a.md": record("TT-1").replace("## ", "### ", 1)}, [], 0, {"TT-1"}, set()),
+    "two level-3 records": (
+        {"a.md": "# 归档\n\n" + (record("TT-1", review="2027-01-01") + "\n" + record("TT-2")).replace("## ", "### ")},
+        [], 0, {"TT-2"}, set(),
+    ),
+    "leading BOM": ({"a.md": "\ufeff" + record("TT-1")}, [], 0, {"TT-1"}, set()),
+    "star list marker": ({"a.md": record("TT-1").replace("- ", "* ")}, [], 0, {"TT-1"}, set()),
+    "space before colon": ({"a.md": record("TT-1").replace("- Verdict：", "- Verdict ：")}, [], 0, {"TT-1"}, set()),
+    "basic-format date": ({"a.md": record("TT-1", review="20261130")}, [], 0, set(), {"TT-1"}),
+    "ISO week date": ({"a.md": record("TT-1", review="2026-W48-1")}, [], 0, set(), {"TT-1"}),
+    "invalid month": ({"a.md": record("TT-1", review="2026-13-01")}, [], 0, set(), {"TT-1"}),
+    "no heading": ({"a.md": "- Verdict：改。\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"a.md"}),
+    "not UTF-8 then a good file": (
+        {"a.md": "## TT-0\n- Verdict：\xff", "b.md": record("TT-1")}, [], 0, {"TT-1"}, {"a.md"}
+    ),
     "strict with due": ({"a.md": record("TT-1")}, ["--strict"], 1, {"TT-1"}, set()),
     "strict with error": ({"a.md": record("TT-1", review=None)}, ["--strict"], 1, set(), {"TT-1"}),
     "strict clean": ({"a.md": record("TT-1", review="2027-01-01")}, ["--strict"], 0, set(), set()),
@@ -67,8 +83,10 @@ def ids(out: str, tag: str) -> set[str]:
     found = set()
     for line in out.splitlines():
         if line.startswith(tag):
-            title = line.split(": ", 1)[1]
-            found.add(title.split("（", 1)[0])
+            rest = line.split(None, 1)[1]
+            # "ERROR a.md: 无法读取…" names a file; "DUE   a.md: TT-1（…）" names a record
+            file, _, title = rest.partition(": ")
+            found.add(title.split("（", 1)[0] if title and not title.startswith(("无法读取", "含 Verdict")) else file)
     return found
 
 
@@ -79,7 +97,8 @@ def main() -> int:
             for rel, text in files.items():
                 p = Path(tmp) / rel
                 p.parent.mkdir(parents=True, exist_ok=True)
-                p.write_bytes(text.encode("utf-8"))
+                raw = text.encode("utf-8")
+                p.write_bytes(raw.replace("\xff".encode("utf-8"), b"\xff"))  # "\xff" stands for a non-UTF-8 byte
             r = run(Path(tmp), extra)
         got = (r.returncode, ids(r.stdout, "DUE"), ids(r.stdout, "ERROR"))
         ok = got == (code, due, errors)

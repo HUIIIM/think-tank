@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """List decision records that are due for review (references/decision-record-template.md, rules 6-7).
 
-Reads every *.md file under the given archive directory. A record is a "## " section
-that has a "- Verdict：" line (field names may be bold). It is due when its "- 复评日期：" date is on or before today,
+Reads every *.md file under the given archive directory. A record is a heading section
+(any level, "#" to "######") that has a "- Verdict：" line; field names may be bold, the
+list marker may be "-" or "*". It is due when its "- 复评日期：" date is on or before today,
 its "- 实际结果：" is still empty or starts with "待复评", and its "- 状态：" is not 已取代 / 已撤销.
-A record whose 复评日期 is missing or not a single YYYY-MM-DD date is reported as an error.
+Reported as errors: a 复评日期 that is missing or not exactly one YYYY-MM-DD date, a file that
+mentions Verdict but yields no record, and a file that cannot be read as UTF-8.
 
 Usage: review_due.py <archive-dir> [--today YYYY-MM-DD] [--strict]
 --strict exits 1 when anything is due or in error; otherwise the exit status is 0.
@@ -18,7 +20,9 @@ from datetime import date
 from pathlib import Path
 
 # Field names may be bold ("- **复评日期**：" or "- **复评日期：**"); the value may be in ` or **.
-FIELD = r"^- \**{name}\**[：:]\**[ \t]*(.*?)[ \t]*$"
+FIELD = r"^[-*][ \t]+\**{name}\**[ \t]*[：:]\**[ \t]*(.*?)[ \t]*$"
+HEADING = r"^(?=#{1,6}[ \t])"
+ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 CLOSED = ("已取代", "已撤销")
 
 
@@ -31,14 +35,24 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
     due: list[str] = []
     errors: list[str] = []
     for path in sorted(root.rglob("*.md")):
-        text = path.read_text(encoding="utf-8")  # universal newlines: CRLF reads as LF
-        for section in re.split(r"^(?=## )", text, flags=re.M):
-            if not section.startswith("## ") or field(section, "Verdict") is None:
+        rel = path.relative_to(root)
+        try:
+            # universal newlines: CRLF reads as LF; utf-8-sig drops a leading BOM
+            text = path.read_text(encoding="utf-8-sig")
+        except (OSError, UnicodeDecodeError) as err:
+            errors.append(f"ERROR {rel}: 无法读取（{type(err).__name__}）")
+            continue
+        found = 0
+        for section in re.split(HEADING, text, flags=re.M):
+            if not section.startswith("#") or field(section, "Verdict") is None:
                 continue
-            title = section.splitlines()[0][3:].strip()
-            where = f"{path.relative_to(root)}: {title}"
+            found += 1
+            title = section.splitlines()[0].lstrip("#").strip()
+            where = f"{rel}: {title}"
             raw = field(section, "复评日期")
             try:
+                if not ISO_DATE.fullmatch(raw or ""):
+                    raise ValueError
                 when = date.fromisoformat(raw or "")
             except ValueError:
                 errors.append(f"ERROR {where}: 复评日期缺失或不是 YYYY-MM-DD（{raw!r}）")
@@ -47,6 +61,8 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
             status = field(section, "状态") or ""
             if when <= today and (not result or result.startswith("待复评")) and not status.startswith(CLOSED):
                 due.append(f"DUE   {where}（复评日期 {when.isoformat()}）")
+        if not found and "Verdict" in text:
+            errors.append(f"ERROR {rel}: 含 Verdict 但未解析出记录（需要标题行与 \"- Verdict：\" 字段行）")
     return due, errors
 
 
