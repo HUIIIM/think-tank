@@ -66,6 +66,24 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "not UTF-8 then a good file": (
         {"a.md": "## TT-0\n- Verdict：\xff", "b.md": record("TT-1")}, [], 0, {"TT-1"}, {"a.md"}
     ),
+    "sub-heading after Verdict": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "### 三队观点\n\n- 红队：示例。\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "sub-heading before Verdict": ({"a.md": record("TT-1").replace("- Verdict：", "### 背景\n\n- Verdict：")}, [], 0, {"TT-1"}, set()),
+    "status after sub-heading": (
+        {"a.md": record("TT-1", status="已取代（→ TT-9）").replace("- 实际结果：", "### 结果\n\n- 实际结果：")}, [], 0, set(), set()
+    ),
+    "heading in code fence": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "```\n# 注释\n```\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    # TT-2 nests under TT-1, so TT-1's block holds two Verdicts: TT-2 is still read, TT-1 is reported, not skipped
+    "level-1 then level-2 record": ({"a.md": record("TT-1", review="2027-01-01").replace("## ", "# ", 1) + "\n" + record("TT-2")}, [], 0, {"TT-2"}, {"a.md"}),
+    "level-3 then level-2 record": (
+        {"a.md": record("TT-1").replace("## ", "### ", 1) + "\n" + record("TT-2", review="2027-01-01")}, [], 0, {"TT-1"}, set()
+    ),
+    "unsupported list marker": ({"a.md": record("TT-1").replace("- ", "+ ")}, [], 0, set(), {"a.md"}),
+    "Verdict before first heading": ({"a.md": "- Verdict：改。\n\n" + record("TT-1")}, [], 0, {"TT-1"}, {"a.md"}),
+    "directory named .md": ({"x.md/b.md": record("TT-1")}, [], 0, {"TT-1"}, set()),
     "strict with due": ({"a.md": record("TT-1")}, ["--strict"], 1, {"TT-1"}, set()),
     "strict with error": ({"a.md": record("TT-1", review=None)}, ["--strict"], 1, set(), {"TT-1"}),
     "strict clean": ({"a.md": record("TT-1", review="2027-01-01")}, ["--strict"], 0, set(), set()),
@@ -105,6 +123,20 @@ def main() -> int:
         failures += not ok
         print(f"{'ok ' if ok else 'BAD'} {name} -> {got}")
     with tempfile.TemporaryDirectory() as tmp:
+        (Path(tmp) / "gone.md").symlink_to(Path(tmp) / "nowhere.md")
+        (Path(tmp) / "b.md").write_text(record("TT-1"), encoding="utf-8")
+        r = run(Path(tmp), [])
+    got = (r.returncode, ids(r.stdout, "DUE"), ids(r.stdout, "ERROR"))
+    ok = got == (0, {"TT-1"}, {"gone.md"})
+    failures += not ok
+    print(f"{'ok ' if ok else 'BAD'} broken symlink then a good file -> {got}")
+    with tempfile.TemporaryDirectory() as tmp:
+        r = run(Path(tmp), [])
+        bad = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", "20261130"], capture_output=True, text=True)
+    ok = r.returncode == 0 and bad.returncode == 2
+    failures += not ok
+    print(f"{'ok ' if ok else 'BAD'} --today accepts only YYYY-MM-DD -> {bad.returncode}")
+    with tempfile.TemporaryDirectory() as tmp:
         r = run(Path(tmp) / "missing", [])
     ok = r.returncode == 2
     failures += not ok
@@ -114,7 +146,7 @@ def main() -> int:
         ok = needle in template
         failures += not ok
         print(f"{'ok ' if ok else 'BAD'} template has {needle!r}")
-    total = len(CASES) + 5
+    total = len(CASES) + 7
     print(f"{total - failures}/{total} review_due fixtures behaved as expected")
     return 1 if failures else 0
 

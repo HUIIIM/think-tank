@@ -11,7 +11,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 ### Added
 - 决策结果回路（SOTA 路线图第 6 项）/ decision outcome loop (roadmap item 6):
   - `references/decision-record-template.md` 新增"置信度""预期结果""复评日期""实际结果""状态"五个字段，以及填写纪律第 6、7 条（复评时对照预期与置信度、被取代时改状态不删记录；真实记录不进本公开仓库）/ confidence, expected outcome, review date, actual outcome and status fields; real records stay out of this public repo.
-  - `scripts/review_due.py`：列出归档目录中到期待复评的记录，并把缺少或写错复评日期（只认 YYYY-MM-DD）、写了 Verdict 却读不出记录、无法按 UTF-8 读取的情况报为错误，`--strict` 时退出码 1；`scripts/test_review_due.py` 夹具测试，接入 CI 的 lint 任务 / lists records due for review; fixture tests run in CI.
+  - `scripts/review_due.py`：列出归档目录中到期待复评的记录，并把缺少或写错复评日期（只认 YYYY-MM-DD）、写了 Verdict 却读不出记录、无法按 UTF-8 读取的情况报为错误；记录内可用子标题，代码块中的 `#` 行不算标题，`--strict` 时退出码 1；`scripts/test_review_due.py` 夹具测试，接入 CI 的 lint 任务 / lists records due for review; fixture tests run in CI.
   - 验收：`evals/smoke-15.md`（smoke-09 输入，新模板，标准运行前写定，独立评分 PASS 6/6）；旧模板产出的 smoke-05、11、14 记录在 `review_due.py --strict` 下均报复评日期缺失 / acceptance run smoke-15 passes; old-template records fail the check.
 - 供应链与 SAST（处理 #7 N-4 的 SEC-2/3/4 与 persist-credentials 部分，Scorecard 分数合并后复核；vertciti STANDARDS SEC-2/3/4）：新增 CodeQL（python、actions）与 dependency-review 工作流（取自组织模板，按 SHA 固定）；Dependabot 增加 pip（`/.github` 的 lint 依赖）；gitleaks、CodeQL、dependency-review 的 checkout 设 `persist-credentials: false` / supply chain: CodeQL and dependency-review workflows, Dependabot for pip, no persisted git credentials.
 
