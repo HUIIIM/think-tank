@@ -7,6 +7,7 @@ check keeps the script's field names in step with references/decision-record-tem
 Exit status is non-zero if any expectation fails.
 """
 
+import re
 import subprocess
 import sys
 import tempfile
@@ -16,6 +17,8 @@ ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "review_due.py"
 TEMPLATE = ROOT / "references" / "decision-record-template.md"
 TODAY = "2026-11-30"
+# ERROR messages about a whole file rather than one record
+FILE_LEVEL = ("无法读取", "含 Verdict", "第 ", "代码块或 HTML 注释")
 
 
 def record(rid: str, review: str | None = "2026-11-30", result: str = "待复评", status: str = "已采纳") -> str:
@@ -116,6 +119,43 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "later sibling section lends nothing": (
         {"a.md": record("TT-1", review=None) + "\n## 附录\n\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"TT-1"}
     ),
+    "B2: sibling sub-section inside the record": (
+        {"a.md": "## TT-2\n- Verdict：改\n### 关联记录\n- 状态：已取代（→ TT-2）\n### 复评\n"
+                 "- 复评日期：2026-11-01\n- 实际结果：待复评\n- 状态：已采纳\n"},
+        [], 0, set(), {"TT-2"},
+    ),
+    "B2: status twice": ({"a.md": record("TT-1", status="已取代（→ TT-9）") + "- 状态：已采纳\n"}, [], 0, set(), {"TT-1"}),
+    "B2: review date twice": ({"a.md": record("TT-1", review="2027-06-01") + "- 复评日期：2026-11-01\n"}, [], 0, set(), {"TT-1"}),
+    "B2: result twice": ({"a.md": record("TT-1", result="达到——草") + "- 实际结果：待复评\n"}, [], 0, set(), {"TT-1"}),
+    "B2: unrecognised record heading": (
+        {"a.md": "# 决策记录 TT-2\n\n## 关联记录\n\n- 状态：已取代（→ TT-2）\n- 实际结果：达到——TT-0\n\n"
+                 + record("TT-2").replace("## TT-2", "  ## TT-2")},
+        [], 0, set(), {"关联记录", "a.md"},
+    ),
+    "full-width hash heading": ({"a.md": record("TT-1") + "\n＃＃ TT-2\n"}, [], 0, {"TT-1"}, {"a.md"}),
+    "unclosed fence swallows a record": (
+        {"a.md": record("TT-1", review="2027-01-01") + "```\n" + record("TT-2")}, [], 0, set(), {"a.md"}
+    ),
+    "HTML comment hides heading and fields": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "<!--\n## 旧稿\n- 状态：已撤销\n-->\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "fence indented four spaces is not a fence": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "    ```\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "Verdict in a code block is ignored": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "```\n- Verdict：驳。\n+ Verdict：驳。\n```\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "numbered Verdict beside a good record": (
+        {"a.md": record("TT-1", review="2027-01-01") + "\n" + record("TT-2").replace("- Verdict：", "1. Verdict：")}, [], 0, set(), {"a.md"}
+    ),
+    "bare Verdict beside a good record": (
+        {"a.md": record("TT-1", review="2027-01-01") + "\n## TT-2\n**Verdict**：改\n"}, [], 0, set(), {"a.md"}
+    ),
+    "annotated Verdict beside a good record": (
+        {"a.md": record("TT-1", review="2027-01-01") + "\n## TT-3\n- Verdict（终裁）：改\n"}, [], 0, set(), {"a.md"}
+    ),
+    "status in full-width parentheses": ({"a.md": record("TT-1", status="（已取代 → TT-9）")}, [], 0, set(), set()),
+    "empty heading gets a placeholder name": ({"a.md": record("TT-1").replace("## TT-1（终裁·改，2026-10-30；示例议题）", "## ")}, [], 0, {"（无标题）"}, set()),
     "Verdict only in prose": ({"a.md": "## 说明\n\n本文件说明 Verdict 的写法。\n"}, [], 0, set(), {"a.md"}),
     "hash without space is not a heading": ({"a.md": "#TT-1\n- Verdict：改。\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"a.md"}),
     "closing hashes dropped from name": ({"a.md": record("TT-1").replace("## TT-1（终裁·改，2026-10-30；示例议题）", "## TT-1 ##")}, [], 0, {"TT-1"}, set()),
@@ -149,7 +189,11 @@ def ids(out: str, tag: str) -> set[str]:
             rest = line.split(None, 1)[1]
             # "ERROR a.md: 无法读取…" names a file; "DUE   a.md: TT-1（…）" names a record
             file, _, title = rest.partition(": ")
-            found.add(title.split("（", 1)[0] if title and not title.startswith(("无法读取", "含 Verdict")) else file)
+            if not title or title.startswith(FILE_LEVEL):
+                found.add(file)
+                continue
+            name = re.split(r"（复评日期 |: ", title, maxsplit=1)[0]  # drop the DUE / ERROR suffix
+            found.add(name.split("（", 1)[0] or name)
     return found
 
 

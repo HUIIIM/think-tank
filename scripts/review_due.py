@@ -12,8 +12,12 @@ empty or starts with "待复评", and its "- 状态：" is not 已取代 / 已�
 Reported as errors: a 复评日期 that is missing or not exactly one YYYY-MM-DD date; a Verdict
 line outside every heading, or sharing its deepest heading with another Verdict line (a record
 nested under another record's heading is read on its own and left out of the outer one); a
-Verdict line in an unsupported form ("+ ", "1. ", indented, lower-case); a file that mentions
-Verdict but yields no record; and a file that cannot be read as UTF-8.
+Verdict line in an unsupported form ("+ ", "1. ", no list marker, indented, lower-case,
+"Verdict（…）："); 复评日期, 实际结果 or 状态 written more than once in one record (the first
+value could belong to another record); a heading-like line that is not a heading (indented,
+no space after "#", seven or more "#", full-width "＃"); a fenced code block or HTML comment
+left open at the end of the file; a file that mentions Verdict but yields no record; and a
+file that cannot be read as UTF-8. Lines inside fenced code and HTML comments are ignored.
 
 Usage: review_due.py <archive-dir> [--today YYYY-MM-DD] [--strict]
 --strict exits 1 when anything is due or in error; otherwise the exit status is 0.
@@ -31,8 +35,14 @@ FIELD = r"^[-*][ \t]+\**{name}\**[ \t]*[：:]\**[ \t]*(.*?)[ \t]*$"
 HEADING = re.compile(r"(#{1,6})[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*")
 FENCE = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
 VERDICT = re.compile(FIELD.format(name="Verdict"))
-# A Verdict line the field pattern does not accept: other list markers, indentation, lower case.
-LOOSE_VERDICT = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\**verdict\**[ \t]*[：:]", re.I)
+# A Verdict line the field pattern does not accept: other or no list marker, indentation,
+# lower case, a parenthesised note before the colon.
+LOOSE_VERDICT = re.compile(
+    r"^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?\**verdict\**[ \t]*(?:[（(][^）)\n]*[）)])?[ \t]*\**[：:]", re.I
+)
+# Looks like a heading to a reader but is not one here.
+HEADING_LIKE = re.compile(r" {1,3}#{1,6}[ \t]|#{1,6}[^# \t]|#{7,}|[ \t]*＃")
+CHECKED = ("复评日期", "实际结果", "状态")
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 CLOSED = ("已取代", "已撤销")
 
@@ -42,31 +52,46 @@ def field(section: str, name: str) -> str | None:
     return m.group(1).strip("*` \t") if m else None
 
 
-def code_mask(lines: list[str]) -> list[bool]:
-    """True for each line inside a fenced code block (CommonMark: the closing fence uses the
-    same character, is at least as long as the opening one, and carries no info string)."""
+def count(section: str, name: str) -> int:
+    return len(re.findall(FIELD.format(name=name), section, re.M))
+
+
+def code_mask(lines: list[str]) -> tuple[list[bool], bool]:
+    """True for each line inside a fenced code block or an HTML comment, and whether one is
+    still open at the end. Fences follow CommonMark: the closing fence uses the same
+    character, is at least as long as the opening one, and carries no info string."""
     mask: list[bool] = []
     fence = ""
+    comment = False
     for line in lines:
         m = FENCE.match(line)
         if fence:
             mask.append(True)
             if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not m.group(2).strip():
                 fence = ""
+        elif comment:
+            mask.append(True)
+            comment = "-->" not in line
         elif m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
             mask.append(True)
             fence = m.group(1)
+        elif line.lstrip().startswith("<!--"):
+            mask.append(True)
+            comment = "-->" not in line.split("<!--", 1)[1]
         else:
             mask.append(False)
-    return mask
+    return mask, bool(fence) or comment
 
 
-def records(text: str) -> tuple[list[tuple[str, str]], int]:
-    """(title, block) for each record, and the number of Verdict lines that belong to none.
-
-    The block keeps only lines outside fenced code, so fields are never read from code."""
+def records(text: str) -> tuple[list[tuple[str, str]], int, list[str]]:
+    """(title, block) for each record, the number of Verdict lines that belong to none, and
+    file-level problems. The block keeps only lines outside code and comments."""
     lines = text.split("\n")
-    code = code_mask(lines)
+    code, unclosed = code_mask(lines)
+    problems = ["代码块或 HTML 注释到文件末尾仍未闭合"] if unclosed else []
+    odd = [i + 1 for i, line in enumerate(lines) if not code[i] and HEADING_LIKE.match(line)]
+    if odd:
+        problems.append(f"第 {', '.join(map(str, odd[:5]))} 行像标题但不是（标题须为行首 # 加空格，1–6 个 #）")
     heads: list[tuple[int, int, str]] = []  # (line index, level, title)
     for i, line in enumerate(lines):
         if not code[i] and (m := HEADING.fullmatch(line)):
@@ -105,8 +130,8 @@ def records(text: str) -> tuple[list[tuple[str, str]], int]:
             stack.append(starts[i])
         if stack and not code[i]:
             body[stack[-1]].append(line)
-    found = [(heads[n][2], "\n".join(body[n])) for n in owners]
-    return found, stray
+    found = [(heads[n][2] or "（无标题）", "\n".join(body[n])) for n in owners]
+    return found, stray, problems
 
 
 def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
@@ -122,9 +147,14 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
         except (OSError, UnicodeDecodeError) as err:
             errors.append(f"ERROR {rel}: 无法读取（{type(err).__name__}）")
             continue
-        found, stray = records(text)
+        found, stray, problems = records(text)
+        errors += [f"ERROR {rel}: {p}" for p in problems]
         for title, section in found:
             where = f"{rel}: {title}"
+            twice = [name for name in CHECKED if count(section, name) > 1]
+            if twice:
+                errors.append(f"ERROR {where}: 字段重复（{'、'.join(twice)}），无法判断哪一个属于本记录")
+                continue
             raw = field(section, "复评日期")
             try:
                 if not ISO_DATE.fullmatch(raw or ""):
@@ -134,7 +164,7 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
                 errors.append(f"ERROR {where}: 复评日期缺失或不是 YYYY-MM-DD（{raw!r}）")
                 continue
             result = field(section, "实际结果") or ""
-            status = field(section, "状态") or ""
+            status = (field(section, "状态") or "").lstrip("（(")
             if when <= today and (not result or result.startswith("待复评")) and not status.startswith(CLOSED):
                 due.append(f"DUE   {where}（复评日期 {when.isoformat()}）")
         if stray:
