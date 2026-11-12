@@ -42,7 +42,9 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "missing date": ({"a.md": record("TT-1", review=None)}, [], 0, set(), {"TT-1"}),
     "date with text": ({"a.md": record("TT-1", review="2026-11-30（4 期后）")}, [], 0, set(), {"TT-1"}),
     "placeholder date": ({"a.md": record("TT-1", review="<YYYY-MM-DD>")}, [], 0, set(), {"TT-1"}),
-    "not a record": ({"a.md": "## 笔记\n\n- 复评日期：2026-01-01\n"}, [], 0, set(), set()),
+    # the archive holds only records, so record fields without a Verdict mean a broken record
+    "fields without Verdict": ({"a.md": "## 笔记\n\n- 复评日期：2026-01-01\n"}, [], 0, set(), {"a.md"}),
+    "no record fields at all": ({"a.md": "## 笔记\n\n随手记。\n"}, [], 0, set(), set()),
     "two records one file": (
         {"a.md": record("TT-1", review="2027-01-01") + "\n" + record("TT-2")}, [], 0, {"TT-2"}, set()
     ),
@@ -69,13 +71,15 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "not UTF-8 then a good file": (
         {"a.md": "## TT-0\n- Verdict：\xff", "b.md": record("TT-1")}, [], 0, {"TT-1"}, {"a.md"}
     ),
+    # the three fields must sit directly under the record heading; under a sub-heading they are missing
     "sub-heading after Verdict": (
-        {"a.md": record("TT-1").replace("- 复评日期：", "### 三队观点\n\n- 红队：示例。\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+        {"a.md": record("TT-1").replace("- 复评日期：", "### 三队观点\n\n- 红队：示例。\n- 复评日期：")}, [], 0, set(), {"TT-1"}
     ),
+    "sub-heading after the fields is fine": ({"a.md": record("TT-1") + "### 三队观点\n\n- 红队：示例。\n"}, [], 0, {"TT-1"}, set()),
     # the record is the deepest heading holding the Verdict, so it is listed under that heading's name
     "sub-heading before Verdict": ({"a.md": record("TT-1").replace("- Verdict：", "### 背景\n\n- Verdict：")}, [], 0, {"背景"}, set()),
     "status after sub-heading": (
-        {"a.md": record("TT-1", status="已取代（→ TT-9）").replace("- 实际结果：", "### 结果\n\n- 实际结果：")}, [], 0, set(), set()
+        {"a.md": record("TT-1", status="已取代（→ TT-9）").replace("- 实际结果：", "### 结果\n\n- 实际结果：")}, [], 0, set(), {"TT-1"}
     ),
     "heading in code fence": (
         {"a.md": record("TT-1").replace("- 复评日期：", "```\n# 注释\n```\n- 复评日期：")}, [], 0, {"TT-1"}, set()
@@ -156,6 +160,41 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     ),
     "status in full-width parentheses": ({"a.md": record("TT-1", status="（已取代 → TT-9）")}, [], 0, set(), set()),
     "empty heading gets a placeholder name": ({"a.md": record("TT-1").replace("## TT-1（终裁·改，2026-10-30；示例议题）", "## ")}, [], 0, {"（无标题）"}, set()),
+    "B3: result in full-width parentheses": ({"a.md": record("TT-1", result="（待复评）")}, [], 0, {"TT-1"}, set()),
+    "B3: result in quotes": ({"a.md": record("TT-1", result="“待复评”")}, [], 0, {"TT-1"}, set()),
+    "B3: result after a full-width space": ({"a.md": record("TT-1", result="\u3000待复评")}, [], 0, {"TT-1"}, set()),
+    "B3: result 暂无": ({"a.md": record("TT-1", result="暂无")}, [], 0, {"TT-1"}, set()),
+    "B3: result TBD": ({"a.md": record("TT-1", result="TBD")}, [], 0, {"TT-1"}, set()),
+    "B3: result 未达到 is reviewed": ({"a.md": record("TT-1", result="未达到——更正仍有 1 次")}, [], 0, set(), set()),
+    "B3: result 部分达到 is reviewed": ({"a.md": record("TT-1", result="部分达到——TT-3")}, [], 0, set(), set()),
+    "B3: bold reviewed result": ({"a.md": record("TT-1", result="**达到**——0 次更正")}, [], 0, set(), set()),
+    "B4: status only in a sub-section": (
+        {"a.md": record("TT-2").replace("- 状态：已采纳\n", "### 关联记录\n- TT-1：周报周五发\n- 状态：已取代（→ TT-2）\n")},
+        [], 0, set(), {"TT-2"},
+    ),
+    "B4: result only in a sub-section": (
+        {"a.md": record("TT-2").replace("- 实际结果：待复评\n", "").replace("- 状态：已采纳\n", "- 状态：已采纳\n### 关联\n- 实际结果：达到——TT-1\n")},
+        [], 0, set(), {"TT-2"},
+    ),
+    "B4: missing status": ({"a.md": record("TT-1").replace("- 状态：已采纳\n", "")}, [], 0, set(), {"TT-1"}),
+    "B4: status with a note": ({"a.md": record("TT-1").replace("- 状态：", "- 状态（当前）：")}, [], 0, set(), {"TT-1"}),
+    "B4: status in a quote": ({"a.md": record("TT-1").replace("- 状态：", "> - 状态：")}, [], 0, set(), {"TT-1"}),
+    "B4: status in a table": ({"a.md": record("TT-1").replace("- 状态：已采纳", "| 状态：已采纳 |")}, [], 0, set(), {"TT-1"}),
+    "B4: no-break space after marker": ({"a.md": record("TT-1").replace("- 状态：", "-\xa0状态：")}, [], 0, set(), {"TT-1"}),
+    "B4: full-width space before colon": ({"a.md": record("TT-1").replace("- 状态：", "- 状态\u3000：")}, [], 0, set(), {"TT-1"}),
+    "setext heading is reported": ({"a.md": record("TT-1") + "\n附录\n===\n"}, [], 0, {"TT-1"}, {"a.md"}),
+    "setext dash heading is reported": ({"a.md": record("TT-1") + "\n附录\n---\n"}, [], 0, {"TT-1"}, {"a.md"}),
+    "rule after a blank line is fine": ({"a.md": record("TT-1") + "\n---\n"}, [], 0, {"TT-1"}, set()),
+    "unclosed HTML comment": ({"a.md": record("TT-1") + "<!--\n注释\n"}, [], 0, {"TT-1"}, {"a.md"}),
+    "seven hashes": ({"a.md": record("TT-1") + "####### 太深\n"}, [], 0, {"TT-1"}, {"a.md"}),
+    "hash without space inside a record": ({"a.md": record("TT-1") + "#注释\n"}, [], 0, {"TT-1"}, {"a.md"}),
+    "upper-case and long extensions": ({"a.MD": record("TT-1"), "b.markdown": record("TT-2")}, [], 0, {"TT-1", "TT-2"}, set()),
+    "related-record sub-section is ignored": (
+        {"a.md": record("TT-2") + "### 关联记录\n- TT-1：周报周五发\n- 状态：已取代（→ TT-2）\n- 实际结果：达到——TT-0\n"},
+        [], 0, {"TT-2"}, set(),
+    ),
+    "loose status beside a proper one": ({"a.md": record("TT-1") + "> - 状态：已取代（→ TT-9）\n"}, [], 0, set(), {"TT-1"}),
+    "table status beside a proper one": ({"a.md": record("TT-1") + "| 状态：已取代 |\n"}, [], 0, set(), {"TT-1"}),
     "Verdict only in prose": ({"a.md": "## 说明\n\n本文件说明 Verdict 的写法。\n"}, [], 0, set(), {"a.md"}),
     "hash without space is not a heading": ({"a.md": "#TT-1\n- Verdict：改。\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"a.md"}),
     "closing hashes dropped from name": ({"a.md": record("TT-1").replace("## TT-1（终裁·改，2026-10-30；示例议题）", "## TT-1 ##")}, [], 0, {"TT-1"}, set()),

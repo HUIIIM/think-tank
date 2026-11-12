@@ -1,23 +1,28 @@
 #!/usr/bin/env python3
 """List decision records that are due for review (references/decision-record-template.md, rules 6-7).
 
-Reads every *.md file under the given archive directory. An ATX heading ("#" to "######"
-followed by a space, outside fenced code) opens a block that runs to the next heading of
-the same or a higher level, so sub-headings stay inside it. Each "- Verdict：" line belongs
-to the deepest heading block that contains it; that block is the record, and its fields
-are read only from that block, never from sibling sections, a document title above it, or
-fenced code. Field names may be bold; the list marker may be "-" or "*".
-A record is due when its "- 复评日期：" date is on or before today, its "- 实际结果：" is still
-empty or starts with "待复评", and its "- 状态：" is not 已取代 / 已撤销.
-Reported as errors: a 复评日期 that is missing or not exactly one YYYY-MM-DD date; a Verdict
-line outside every heading, or sharing its deepest heading with another Verdict line (a record
-nested under another record's heading is read on its own and left out of the outer one); a
-Verdict line in an unsupported form ("+ ", "1. ", no list marker, indented, lower-case,
-"Verdict（…）："); 复评日期, 实际结果 or 状态 written more than once in one record (the first
-value could belong to another record); a heading-like line that is not a heading (indented,
-no space after "#", seven or more "#", full-width "＃"); a fenced code block or HTML comment
-left open at the end of the file; a file that mentions Verdict but yields no record; and a
-file that cannot be read as UTF-8. Lines inside fenced code and HTML comments are ignored.
+Reads every .md / .markdown file under the given archive directory. An ATX heading ("#" to
+"######" followed by a space, outside fenced code and HTML comments) starts a section that
+runs to the next heading of any level. A section holding exactly one "- Verdict：" line is
+a record; its fields are read from that section only.
+复评日期, 实际结果 and 状态 must each appear exactly once, directly under the record heading
+(before any sub-heading); they are never read from sub-sections, sibling sections, a
+document title above, fenced code or HTML comments. Field names may be bold; the list
+marker may be "-" or "*".
+A record is due when its 复评日期 is on or before today, unless its 实际结果 starts with
+达到 / 未达到 / 部分达到 or its 状态 starts with 已取代 / 已撤销 (after spaces, emphasis,
+quotes and brackets are trimmed): anything unclear keeps the reminder.
+Reported as errors:
+- a 复评日期 that is not exactly one YYYY-MM-DD date;
+- one of the three fields missing from the record's own lines (a copy under a sub-heading
+  does not count), written twice there, or written there in a form the field pattern does
+  not accept (a quote, a table, a note before the colon, a non-breaking or full-width space);
+- a Verdict line outside every heading, sharing its section with another Verdict line, or
+  in an unsupported form ("+ ", "1. ", no list marker, indented, lower case, "Verdict（…）：");
+- a heading-like line that is not a heading (indented, no space after "#", seven or more
+  "#", full-width "＃", a setext underline);
+- a fenced code block or HTML comment left open at the end of the file;
+- a file with Verdict or 复评日期 that yields no record, or that cannot be read as UTF-8.
 
 Usage: review_due.py <archive-dir> [--today YYYY-MM-DD] [--strict]
 --strict exits 1 when anything is due or in error; otherwise the exit status is 0.
@@ -31,7 +36,7 @@ from datetime import date
 from pathlib import Path
 
 # Field names may be bold ("- **复评日期**：" or "- **复评日期：**"); the value may be in ` or **.
-FIELD = r"^[-*][ \t]+\**{name}\**[ \t]*[：:]\**[ \t]*(.*?)[ \t]*$"
+FIELD = r"^[-*][ \t]+\**{name}\**[ \t]*[：:]\**[ \t]*(.*)$"
 HEADING = re.compile(r"(#{1,6})[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*")
 FENCE = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
 VERDICT = re.compile(FIELD.format(name="Verdict"))
@@ -42,14 +47,23 @@ LOOSE_VERDICT = re.compile(
 )
 # Looks like a heading to a reader but is not one here.
 HEADING_LIKE = re.compile(r" {1,3}#{1,6}[ \t]|#{1,6}[^# \t]|#{7,}|[ \t]*＃")
+SETEXT = re.compile(r" {0,3}(=+|-+)[ \t]*")
 CHECKED = ("复评日期", "实际结果", "状态")
+# A line a reader would take for one of CHECKED that FIELD does not accept: a quote, table or
+# other list marker, a non-breaking or full-width space, a parenthesised note before the colon.
+LOOSE_FIELD = re.compile(
+    r"^[\s>|+\-*\d.)\u3000\xa0]*\**(" + "|".join(CHECKED) + r")\**[\s\u3000\xa0]*(?:[（(][^）)\n]*[）)])?[\s\u3000\xa0]*\**[：:]"
+)
+NOISE = " \t\u3000\xa0*`_\"'“”‘’「」『』（）()<>[]【】"
+REVIEWED = ("达到", "未达到", "部分达到")
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 CLOSED = ("已取代", "已撤销")
 
 
 def field(section: str, name: str) -> str | None:
+    """The value of a field line, with emphasis, quotes, brackets and spaces trimmed."""
     m = re.search(FIELD.format(name=name), section, re.M)
-    return m.group(1).strip("*` \t") if m else None
+    return m.group(1).strip(NOISE) if m else None
 
 
 def count(section: str, name: str) -> int:
@@ -84,62 +98,54 @@ def code_mask(lines: list[str]) -> tuple[list[bool], bool]:
 
 
 def records(text: str) -> tuple[list[tuple[str, str]], int, list[str]]:
-    """(title, block) for each record, the number of Verdict lines that belong to none, and
-    file-level problems. The block keeps only lines outside code and comments."""
+    """(title, own lines) for each record, the number of Verdict lines that belong to none,
+    and file-level problems. A record's own lines run from its heading to the next heading
+    of any level and leave out code and comments."""
     lines = text.split("\n")
     code, unclosed = code_mask(lines)
     problems = ["代码块或 HTML 注释到文件末尾仍未闭合"] if unclosed else []
     odd = [i + 1 for i, line in enumerate(lines) if not code[i] and HEADING_LIKE.match(line)]
+    # a setext underline turns the paragraph line above it into a heading this script ignores
+    odd += [i + 1 for i, line in enumerate(lines)
+            if i and not code[i] and SETEXT.fullmatch(line) and lines[i - 1].strip()
+            and not code[i - 1] and not re.match(r"[ \t]*([-*+>|#]|\d+[.)])", lines[i - 1])
+            and (line.strip()[0] == "=" or not SETEXT.fullmatch(lines[i - 1]))]
+    odd.sort()
     if odd:
         problems.append(f"第 {', '.join(map(str, odd[:5]))} 行像标题但不是（标题须为行首 # 加空格，1–6 个 #）")
-    heads: list[tuple[int, int, str]] = []  # (line index, level, title)
+    heads: list[tuple[int, str]] = []  # (line index, title)
     for i, line in enumerate(lines):
         if not code[i] and (m := HEADING.fullmatch(line)):
-            heads.append((i, len(m.group(1)), m.group(2).strip()))
-    # end of each heading's block: the next heading of the same or a higher level
-    ends = [len(lines)] * len(heads)
-    open_heads: list[int] = []
-    for n, (start, level, _) in enumerate(heads):
-        while open_heads and heads[open_heads[-1]][1] >= level:
-            ends[open_heads.pop()] = start
-        open_heads.append(n)
-    verdicts = [i for i, line in enumerate(lines) if not code[i] and VERDICT.match(line)]
-    loose = sum(1 for i, line in enumerate(lines)
+            heads.append((i, m.group(2).strip()))
+    stray = sum(1 for i, line in enumerate(lines)
                 if not code[i] and LOOSE_VERDICT.match(line) and not VERDICT.match(line))
-    owner: dict[int, list[int]] = {}  # deepest enclosing heading -> its Verdict lines
-    stray = loose
+    owner: dict[int, list[int]] = {}  # nearest heading above -> its Verdict lines
     h = -1
-    for v in verdicts:
+    for v in (i for i, line in enumerate(lines) if not code[i] and VERDICT.match(line)):
         while h + 1 < len(heads) and heads[h + 1][0] < v:
             h += 1
-        # the last heading before v always encloses it: any heading closing its block comes after v
         if h < 0:
             stray += 1
         else:
             owner.setdefault(h, []).append(v)
-    owners = [n for n in sorted(owner) if len(owner[n]) == 1]
-    stray += sum(len(v) for v in owner.values() if len(v) > 1)
-    # each line goes to the innermost record around it, so a nested record keeps its own fields
-    body: dict[int, list[str]] = {n: [] for n in owners}
-    starts = {heads[n][0]: n for n in owners}
-    stack: list[int] = []
-    for i, line in enumerate(lines):
-        while stack and ends[stack[-1]] <= i:
-            stack.pop()
-        if i in starts:
-            stack.append(starts[i])
-        if stack and not code[i]:
-            body[stack[-1]].append(line)
-    found = [(heads[n][2] or "（无标题）", "\n".join(body[n])) for n in owners]
+    found: list[tuple[str, str]] = []
+    for n in sorted(owner):
+        if len(owner[n]) > 1:
+            stray += len(owner[n])
+            continue
+        start = heads[n][0]
+        end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
+        own = "\n".join(line for i, line in enumerate(lines[start:end], start) if not code[i])
+        found.append((heads[n][1] or "（无标题）", own))
     return found, stray, problems
 
 
 def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
     due: list[str] = []
     errors: list[str] = []
-    for path in sorted(root.rglob("*.md")):
+    for path in sorted(root.rglob("*")):
         rel = path.relative_to(root)
-        if path.is_dir():
+        if path.is_dir() or path.suffix.lower() not in (".md", ".markdown"):
             continue
         try:
             # universal newlines: CRLF reads as LF; utf-8-sig drops a leading BOM
@@ -149,13 +155,24 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
             continue
         found, stray, problems = records(text)
         errors += [f"ERROR {rel}: {p}" for p in problems]
-        for title, section in found:
+        for title, own in found:
             where = f"{rel}: {title}"
-            twice = [name for name in CHECKED if count(section, name) > 1]
+            loose = [line.strip() for line in own.split("\n")
+                     if LOOSE_FIELD.match(line) and not any(re.match(FIELD.format(name=n), line) for n in CHECKED)]
+            if loose:
+                errors.append(f"ERROR {where}: 字段写法无法识别（{loose[0][:30]}），须为行首 \"- 字段名：值\"")
+                continue
+            # only the record's own lines count: a sub-section may describe another record
+            counts = {name: count(own, name) for name in CHECKED}
+            twice = [name for name, k in counts.items() if k > 1]
             if twice:
                 errors.append(f"ERROR {where}: 字段重复（{'、'.join(twice)}），无法判断哪一个属于本记录")
                 continue
-            raw = field(section, "复评日期")
+            missing = [name for name, k in counts.items() if k == 0]
+            if missing:
+                errors.append(f"ERROR {where}: 缺少字段（{'、'.join(missing)}），须在记录标题下、子标题之前各写一次")
+                continue
+            raw = field(own, "复评日期")
             try:
                 if not ISO_DATE.fullmatch(raw or ""):
                     raise ValueError
@@ -163,13 +180,15 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
             except ValueError:
                 errors.append(f"ERROR {where}: 复评日期缺失或不是 YYYY-MM-DD（{raw!r}）")
                 continue
-            result = field(section, "实际结果") or ""
-            status = (field(section, "状态") or "").lstrip("（(")
-            if when <= today and (not result or result.startswith("待复评")) and not status.startswith(CLOSED):
+            # only an explicit outcome counts as reviewed and only an explicit status closes a
+            # record: anything unclear keeps the reminder
+            reviewed = (field(own, "实际结果") or "").startswith(REVIEWED)
+            closed = (field(own, "状态") or "").startswith(CLOSED)
+            if when <= today and not reviewed and not closed:
                 due.append(f"DUE   {where}（复评日期 {when.isoformat()}）")
         if stray:
             errors.append(f"ERROR {rel}: 含 Verdict 但未解析出记录（{stray} 个 Verdict 字段行不在任何记录内）")
-        elif not found and "Verdict" in text:
+        elif not found and ("Verdict" in text or re.search(r"复评日期[^\n]{0,8}[：:]", text)):
             errors.append(f"ERROR {rel}: 含 Verdict 但未解析出记录（需要标题行与 \"- Verdict：\" 字段行）")
     return due, errors
 
