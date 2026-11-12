@@ -69,15 +69,60 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "sub-heading after Verdict": (
         {"a.md": record("TT-1").replace("- 复评日期：", "### 三队观点\n\n- 红队：示例。\n- 复评日期：")}, [], 0, {"TT-1"}, set()
     ),
-    "sub-heading before Verdict": ({"a.md": record("TT-1").replace("- Verdict：", "### 背景\n\n- Verdict：")}, [], 0, {"TT-1"}, set()),
+    # the record is the deepest heading holding the Verdict, so it is listed under that heading's name
+    "sub-heading before Verdict": ({"a.md": record("TT-1").replace("- Verdict：", "### 背景\n\n- Verdict：")}, [], 0, {"背景"}, set()),
     "status after sub-heading": (
         {"a.md": record("TT-1", status="已取代（→ TT-9）").replace("- 实际结果：", "### 结果\n\n- 实际结果：")}, [], 0, set(), set()
     ),
     "heading in code fence": (
         {"a.md": record("TT-1").replace("- 复评日期：", "```\n# 注释\n```\n- 复评日期：")}, [], 0, {"TT-1"}, set()
     ),
-    # TT-2 nests under TT-1, so TT-1's block holds two Verdicts: TT-2 is still read, TT-1 is reported, not skipped
-    "level-1 then level-2 record": ({"a.md": record("TT-1", review="2027-01-01").replace("## ", "# ", 1) + "\n" + record("TT-2")}, [], 0, {"TT-2"}, {"a.md"}),
+    # TT-2 nests under TT-1: each is read on its own, and TT-1 does not borrow TT-2's fields
+    "level-1 then level-2 record": ({"a.md": record("TT-1", review="2027-01-01").replace("## ", "# ", 1) + "\n" + record("TT-2")}, [], 0, {"TT-2"}, set()),
+    "outer record borrows nothing": (
+        {"a.md": "# TT-1（示例）\n- Verdict：改。\n- 实际结果：待复评\n\n" + record("TT-2", review="2026-11-01")}, [], 0, {"TT-2"}, {"TT-1"}
+    ),
+    "document title, earlier sibling has fields": (
+        {"a.md": "# 决策记录 TT-2\n\n## 关联记录\n\n- TT-1：周报改周一\n- 状态：已取代（→ TT-2）\n"
+                 "- 实际结果：达到——TT-0\n- 复评日期：2099-01-01\n\n" + record("TT-2")},
+        [], 0, {"TT-2"}, set(),
+    ),
+    "fields in a code block are not read": (
+        {"a.md": record("TT-1", review=None).replace("- Verdict：改——示例。", "- Verdict：改——示例。\n```\n- 复评日期：2026-11-30\n```")},
+        [], 0, set(), {"TT-1"},
+    ),
+    "tilde fence hides a heading": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "~~~\n## 注释\n~~~\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "longer fence holds a shorter one": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "````\n```\n## 注释\n```\n````\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "inline code at line start is not a fence": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "```x``` 是行内代码\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "tilde does not close a backtick fence": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "```\n~~~\n## 注释\n```\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "fence with info string does not close": (
+        {"a.md": record("TT-1").replace("- 复评日期：", "```\n```py\n## 注释\n```\n- 复评日期：")}, [], 0, {"TT-1"}, set()
+    ),
+    "two Verdicts under one heading": (
+        {"a.md": record("TT-1").replace("- Verdict：改——示例。", "- Verdict：改——示例。\n- Verdict：驳。")}, [], 0, set(), {"a.md"}
+    ),
+    "two Verdicts beside a good record": (
+        {"a.md": record("TT-0", review="2027-01-01") + "\n" + record("TT-1").replace("- Verdict：改——示例。", "- Verdict：改——示例。\n- Verdict：驳。")},
+        [], 0, set(), {"a.md"},
+    ),
+    "later sibling section lends nothing": (
+        {"a.md": record("TT-1", review=None) + "\n## 附录\n\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"TT-1"}
+    ),
+    "Verdict only in prose": ({"a.md": "## 说明\n\n本文件说明 Verdict 的写法。\n"}, [], 0, set(), {"a.md"}),
+    "hash without space is not a heading": ({"a.md": "#TT-1\n- Verdict：改。\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"a.md"}),
+    "closing hashes dropped from name": ({"a.md": record("TT-1").replace("## TT-1（终裁·改，2026-10-30；示例议题）", "## TT-1 ##")}, [], 0, {"TT-1"}, set()),
+    "second record with loose marker": (
+        {"a.md": record("TT-1", review="2027-01-01") + "\n" + record("TT-2").replace("- Verdict：", "+ Verdict：")}, [], 0, set(), {"a.md"}
+    ),
+    "lower-case verdict": ({"a.md": record("TT-1").replace("- Verdict：", "- verdict：")}, [], 0, set(), {"a.md"}),
     "level-3 then level-2 record": (
         {"a.md": record("TT-1").replace("## ", "### ", 1) + "\n" + record("TT-2", review="2027-01-01")}, [], 0, {"TT-1"}, set()
     ),

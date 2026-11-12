@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """List decision records that are due for review (references/decision-record-template.md, rules 6-7).
 
-Reads every *.md file under the given archive directory. A heading ("#" to "######", outside
-fenced code) opens a block that runs to the next heading of the same or a higher level, so
-sub-headings stay inside it. A record is the outermost block holding exactly one "- Verdict："
-line; field names may be bold, the list marker may be "-" or "*". It is due when its
-"- 复评日期：" date is on or before today, its "- 实际结果：" is still empty or starts with
-"待复评", and its "- 状态：" is not 已取代 / 已撤销.
-Reported as errors: a 复评日期 that is missing or not exactly one YYYY-MM-DD date, a Verdict
-line that belongs to no record, a file that mentions Verdict but yields no record, and a
-file that cannot be read as UTF-8.
+Reads every *.md file under the given archive directory. An ATX heading ("#" to "######"
+followed by a space, outside fenced code) opens a block that runs to the next heading of
+the same or a higher level, so sub-headings stay inside it. Each "- Verdict：" line belongs
+to the deepest heading block that contains it; that block is the record, and its fields
+are read only from that block, never from sibling sections, a document title above it, or
+fenced code. Field names may be bold; the list marker may be "-" or "*".
+A record is due when its "- 复评日期：" date is on or before today, its "- 实际结果：" is still
+empty or starts with "待复评", and its "- 状态：" is not 已取代 / 已撤销.
+Reported as errors: a 复评日期 that is missing or not exactly one YYYY-MM-DD date; a Verdict
+line outside every heading, or sharing its deepest heading with another Verdict line (a record
+nested under another record's heading is read on its own and left out of the outer one); a
+Verdict line in an unsupported form ("+ ", "1. ", indented, lower-case); a file that mentions
+Verdict but yields no record; and a file that cannot be read as UTF-8.
 
 Usage: review_due.py <archive-dir> [--today YYYY-MM-DD] [--strict]
 --strict exits 1 when anything is due or in error; otherwise the exit status is 0.
@@ -24,8 +28,11 @@ from pathlib import Path
 
 # Field names may be bold ("- **复评日期**：" or "- **复评日期：**"); the value may be in ` or **.
 FIELD = r"^[-*][ \t]+\**{name}\**[ \t]*[：:]\**[ \t]*(.*?)[ \t]*$"
-HEADING = re.compile(r"(#{1,6})[ \t]+(.*)")
-FENCE = re.compile(r"[ \t]*(```|~~~)")
+HEADING = re.compile(r"(#{1,6})[ \t]+(.*?)(?:[ \t]+#+)?[ \t]*")
+FENCE = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
+VERDICT = re.compile(FIELD.format(name="Verdict"))
+# A Verdict line the field pattern does not accept: other list markers, indentation, lower case.
+LOOSE_VERDICT = re.compile(r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\**verdict\**[ \t]*[：:]", re.I)
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 CLOSED = ("已取代", "已撤销")
 
@@ -35,31 +42,71 @@ def field(section: str, name: str) -> str | None:
     return m.group(1).strip("*` \t") if m else None
 
 
+def code_mask(lines: list[str]) -> list[bool]:
+    """True for each line inside a fenced code block (CommonMark: the closing fence uses the
+    same character, is at least as long as the opening one, and carries no info string)."""
+    mask: list[bool] = []
+    fence = ""
+    for line in lines:
+        m = FENCE.match(line)
+        if fence:
+            mask.append(True)
+            if m and m.group(1)[0] == fence[0] and len(m.group(1)) >= len(fence) and not m.group(2).strip():
+                fence = ""
+        elif m and not (m.group(1)[0] == "`" and "`" in m.group(2)):
+            mask.append(True)
+            fence = m.group(1)
+        else:
+            mask.append(False)
+    return mask
+
+
 def records(text: str) -> tuple[list[tuple[str, str]], int]:
-    """(title, block) for each record, and the number of Verdict lines outside any record."""
+    """(title, block) for each record, and the number of Verdict lines that belong to none.
+
+    The block keeps only lines outside fenced code, so fields are never read from code."""
     lines = text.split("\n")
+    code = code_mask(lines)
     heads: list[tuple[int, int, str]] = []  # (line index, level, title)
-    fenced = False
     for i, line in enumerate(lines):
-        if FENCE.match(line):
-            fenced = not fenced
-        elif not fenced and (m := HEADING.fullmatch(line)):
+        if not code[i] and (m := HEADING.fullmatch(line)):
             heads.append((i, len(m.group(1)), m.group(2).strip()))
-    verdict = re.compile(FIELD.format(name="Verdict"))
-    found: list[tuple[str, str]] = []
-    covered = 0
-    used = 0
-    for n, (start, level, title) in enumerate(heads):
-        if start < covered:
-            continue
-        end = next((h[0] for h in heads[n + 1:] if h[1] <= level), len(lines))
-        block = "\n".join(lines[start:end])
-        if sum(1 for line in lines[start:end] if verdict.match(line)) == 1:
-            found.append((title, block))
-            covered = end
-            used += 1
-    total = sum(1 for line in lines if verdict.match(line))
-    return found, total - used
+    # end of each heading's block: the next heading of the same or a higher level
+    ends = [len(lines)] * len(heads)
+    open_heads: list[int] = []
+    for n, (start, level, _) in enumerate(heads):
+        while open_heads and heads[open_heads[-1]][1] >= level:
+            ends[open_heads.pop()] = start
+        open_heads.append(n)
+    verdicts = [i for i, line in enumerate(lines) if not code[i] and VERDICT.match(line)]
+    loose = sum(1 for i, line in enumerate(lines)
+                if not code[i] and LOOSE_VERDICT.match(line) and not VERDICT.match(line))
+    owner: dict[int, list[int]] = {}  # deepest enclosing heading -> its Verdict lines
+    stray = loose
+    h = -1
+    for v in verdicts:
+        while h + 1 < len(heads) and heads[h + 1][0] < v:
+            h += 1
+        # the last heading before v always encloses it: any heading closing its block comes after v
+        if h < 0:
+            stray += 1
+        else:
+            owner.setdefault(h, []).append(v)
+    owners = [n for n in sorted(owner) if len(owner[n]) == 1]
+    stray += sum(len(v) for v in owner.values() if len(v) > 1)
+    # each line goes to the innermost record around it, so a nested record keeps its own fields
+    body: dict[int, list[str]] = {n: [] for n in owners}
+    starts = {heads[n][0]: n for n in owners}
+    stack: list[int] = []
+    for i, line in enumerate(lines):
+        while stack and ends[stack[-1]] <= i:
+            stack.pop()
+        if i in starts:
+            stack.append(starts[i])
+        if stack and not code[i]:
+            body[stack[-1]].append(line)
+    found = [(heads[n][2], "\n".join(body[n])) for n in owners]
+    return found, stray
 
 
 def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
