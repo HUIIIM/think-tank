@@ -81,23 +81,32 @@ ROOT="$DEMO/.."
 nocr() { sed $'s/\r$//' "$1"; }
 first_step="$(nocr "$ROOT/SKILL.md" | sed -n '/^## 工作流/,/^## 输出契约/p' | grep -m1 '^### ')"
 case "$first_step" in "### 第 -2 步：不得代裁闸门（强制，先于一切步骤）") ;; *) echo "  工作流第一步不是不得代裁闸门：$first_step"; ok=0 ;; esac
-# 受保护文本的 SHA-256 指纹：治理铁律＋闸门（SKILL.md）、不得代裁四条（three-teams.md）、
-# 闸门反例回归记录（evals/smoke-02.md）。这只能发现这三段区间内的"改动"，不能判断改动的含义：
-# 区间内任何改动都会 FAIL，必须在同一次提交里更新下面的指纹，评审时一眼可见。
-# 区间外的文字不检查——例如在别处补一句"闸门已废止"不会被发现，只能靠评审。
+# 受保护文本的 SHA-256 指纹（PINS 表）：SKILL.md 治理铁律到第 -1 步（闸门、前置关出口、致命缺陷标准）、
+# 第 5 步终裁稿规则、输出契约；three-teams.md 不得代裁四条；闸门与出口修复的回归记录 evals/smoke-02/03/10/12/13（其余 smoke 记录无指纹）。
+# 这只能发现这些区间内的"改动"，不能判断改动的含义：区间内任何改动都会 FAIL，
+# 必须在同一次提交里更新 PINS 表，评审时一眼可见。区间外的文字不检查——只能靠评审。
 sha() { if command -v sha256sum >/dev/null 2>&1; then sha256sum; else shasum -a 256; fi | cut -d' ' -f1; }
-pin() {  # pin <名称> <期望指纹> <实际指纹>
-  [ "$2" = "$3" ] || { echo "  受保护文本被改动：$1（实际指纹 $3；确属有意修改，请在同一提交中更新 demo/eval.sh 的指纹）"; ok=0; }
+region() {  # region <文件> <起始正则> <结束正则>：去掉行尾 \r 后取 sed 区间；结束正则为空则取全文
+  if [ -z "$3" ]; then nocr "$1"; else nocr "$1" | sed -n "/$2/,/$3/p"; fi
 }
-pin "SKILL.md 治理铁律＋第 -2 步闸门" "a9740f4ac3712f456e483a2a166a2d6ad2fea9a68e93bc8f57239e70a621a767" \
-  "$(nocr "$ROOT/SKILL.md" | sed -n '/^## 治理铁律/,/^### 第 -0.5 步/p' | sha)"
-pin "references/three-teams.md 不得代裁四条" "055bebd5d4fd1f6dc7e5e6067f8ae2acece8ba508d030910b021da03347cd375" \
-  "$(nocr "$ROOT/references/three-teams.md" | sed -n '/^## 不得代裁四条/,/^## 意外视角/p' | sha)"
-if [ -f "$ROOT/evals/smoke-02.md" ]; then
-  pin "evals/smoke-02.md" "1941ce3d4361020164a8ae72f185d53d3e04fdac944e93c28f29d0ef5453a921" "$(nocr "$ROOT/evals/smoke-02.md" | sha)"
-else
-  echo "  缺 evals/smoke-02.md（闸门反例回归）"; ok=0
-fi
+# 名称|文件（相对仓库根）|起始正则|结束正则|期望指纹
+PINS=(
+  "SKILL.md 治理铁律＋第 -2/-0.5/-1 步|SKILL.md|^## 治理铁律|^### 第 -0.5b 步|e65d646a7ced74cd5a0dcb6b1e68db223871d52395f9d8eb2cf24f2ebeba63e9"
+  "SKILL.md 第 5 步终裁稿规则|SKILL.md|^### 第 5 步|^\*\*一句话终裁格式|2a7158aae38f9d0423bb9dbc59cb419a77bc139ae855c38fee4d9980544e8673"
+  "SKILL.md 输出契约|SKILL.md|^## 输出契约|^## 不适用清单|83d4a6f157d7a34c0969c6c146b662dc63567eb2ae0a3c0a65262432e164b424"
+  "references/three-teams.md 不得代裁四条|references/three-teams.md|^## 不得代裁四条|^## 意外视角|055bebd5d4fd1f6dc7e5e6067f8ae2acece8ba508d030910b021da03347cd375"
+  "evals/smoke-02.md|evals/smoke-02.md|||1941ce3d4361020164a8ae72f185d53d3e04fdac944e93c28f29d0ef5453a921"
+  "evals/smoke-03.md|evals/smoke-03.md|||bc711eb12697618932316e73a3b421966cc575fb69773333e92823f1d6029cc6"
+  "evals/smoke-10.md|evals/smoke-10.md|||59f626896805926b30640d221a8e4b456a93750473f922a4635fd17e2f2d0e9d"
+  "evals/smoke-12.md|evals/smoke-12.md|||3b291effe3082c173181f52b5c3004b1a82b4272788a1752519af947c32855df"
+  "evals/smoke-13.md|evals/smoke-13.md|||0f07d1103630967d174cfdc10790fadba286c65e5a164814faca6544b1f06824"
+)
+for row in "${PINS[@]}"; do
+  IFS='|' read -r name file from to want <<<"$row"
+  if [ ! -f "$ROOT/$file" ]; then echo "  缺受保护文件：$file"; ok=0; continue; fi
+  got="$(region "$ROOT/$file" "$from" "$to" | sha)"
+  [ "$want" = "$got" ] || { echo "  受保护文本被改动：$name（实际指纹 $got；确属有意修改，请在同一提交中更新 demo/eval.sh 的 PINS）"; ok=0; }
+done
 
-if [ "$ok" = 1 ]; then echo "PASS: 草稿五节齐全（按 SKILL.md 输出契约）；不得代裁闸门在首位且有反例回归"; exit 0
+if [ "$ok" = 1 ]; then echo "PASS: 草稿五节齐全（按 SKILL.md 输出契约）；不得代裁闸门在首位，受保护文本与回归记录未被改动"; exit 0
 else echo "FAIL: eval 未通过（见上方明细）"; exit 1; fi
