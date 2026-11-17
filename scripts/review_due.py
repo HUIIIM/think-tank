@@ -71,11 +71,15 @@ REVIEWED = re.compile(r"(?:部分达到|未达到|达到)(?:$|[\s—\-（(：:�
 # 已取代 needs the "→ <record ID>" the template asks for; 已撤销 may stand alone.
 CLOSED = re.compile(r"(?:已取代\s*[（(]?\s*→\s*[^\s）)]|已撤销(?:$|[\s—\-（(：:，,。；;]))")
 # A value still hedged or copied from the template's menu is not an outcome: it keeps the reminder.
-# Only explicit hedges count, so evidence such as a URL, "3 次/周" or "等待时长" does not.
+# A hedge keeps the reminder. Any "待" counts except in a few everyday words (等待, 接待…), so a
+# hedge that is not on a list still reminds; so do other markers of an unfinished value and a
+# copied "达到 / 未达到" menu. Ordinary evidence (a URL, a path, "3 次/周") is not matched.
+OUTCOME_WORD = r"(?:部分达到|未达到|达到|已取代|已撤销)"
 PENDING = re.compile(
-    r"[（(]\s*待|(?:^|[\s—\-：:，,。；;→])待(?:复评|确认|定|核|补|填|查|议)"
-    r"|(?<![A-Za-z])(?:TBD|TODO)(?![A-Za-z])|尚未(?:复评|核实|确认|填|定)|未复评|记录编号|证据>"
-    r"|(?:部分达到|未达到|达到|已取代|已撤销)\s*[/／]|[/／]\s*(?:部分达到|未达到|达到|已取代|已撤销)",
+    r"(?<![等接招款对看优虐善亏期])待|等待(?=确认|复评|核|补|数据|结果)|尚未|未复评|未核实|未确认|暂定|占位|记录编号"
+    r"|(?<![A-Za-z])(?:TBD|TBC|TODO|WIP|pending|x{3,})(?![A-Za-z])"
+    r"|<[^>]*>|？|\?(?=$|[\s）)])|…|\.\.\."
+    rf"|{OUTCOME_WORD}\s*(?:[/／]|或)|(?:[/／]|或)\s*{OUTCOME_WORD}",
     re.I,
 )
 # 复评日期 followed, within a few characters, by a year: a field line, a table cell or prose
