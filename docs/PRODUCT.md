@@ -52,6 +52,7 @@
 |---|---|---|
 | Now | v1.0.5 落实 #16 的协议缺口（不可信输入、闸门判定口径、出口先后、终裁稿）；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
 | Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
+| Next | 决策结果回路：模板已有置信度、预期结果、复评日期、实际结果、状态字段，`scripts/review_due.py` 列出到期记录；尚未接入定时提醒，也没有真实记录的复评数据 | 真实归档目录按期跑 `review_due.py --strict`，到期记录都已填写实际结果 |
 | Later | 决策记录归档索引：按主题/结论检索 记录编号（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 
 所有后续修订遵循 洁净室原则：只借思想，不复制原文。
