@@ -71,8 +71,16 @@ REVIEWED = re.compile(r"(?:部分达到|未达到|达到)(?:$|[\s—\-（(：:�
 # 已取代 needs the "→ <record ID>" the template asks for; 已撤销 may stand alone.
 CLOSED = re.compile(r"(?:已取代\s*[（(]?\s*→\s*[^\s）)]|已撤销(?:$|[\s—\-（(：:，,。；;]))")
 # A value still hedged or copied from the template's menu is not an outcome: it keeps the reminder.
-PENDING = re.compile(r"待|TBD|TODO|尚未|未复评|记录编号|证据>|[/／]", re.I)
-DATE_LIKE = re.compile(r"复评日期[^\n]{0,8}[：:]")
+# Only explicit hedges count, so evidence such as a URL, "3 次/周" or "等待时长" does not.
+PENDING = re.compile(
+    r"[（(]\s*待|(?:^|[\s—\-：:，,。；;→])待(?:复评|确认|定|核|补|填|查|议)"
+    r"|(?<![A-Za-z])(?:TBD|TODO)(?![A-Za-z])|尚未(?:复评|核实|确认|填|定)|未复评|记录编号|证据>"
+    r"|(?:部分达到|未达到|达到|已取代|已撤销)\s*[/／]|[/／]\s*(?:部分达到|未达到|达到|已取代|已撤销)",
+    re.I,
+)
+# 复评日期 followed, within a few characters, by a year: a field line, a table cell or prose
+DATE_LIKE = re.compile(r"复评日期[^\n\d]{0,8}?[\s：:|*`]\s*[*`]*\s*\d{4}")
+DATE_FIELD = re.compile(FIELD.format(name="复评日期"))
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 SUFFIXES = (".md", ".markdown")
 
@@ -132,9 +140,11 @@ def records(text: str) -> tuple[list[tuple[str, str]], int, list[str]]:
     if odd:
         problems.append(f"第 {', '.join(map(str, odd[:5]))} 行像标题但不是（标题须为行首 # 加空格，1–6 个 #）")
     heads: list[tuple[int, str]] = []  # (line index, title)
+    levels: list[int] = []
     for i, line in enumerate(lines):
         if not code[i] and (m := HEADING.fullmatch(line)):
             heads.append((i, m.group(2).strip()))
+            levels.append(len(m.group(1)))
     stray = sum(1 for i, line in enumerate(lines)
                 if not code[i] and LOOSE_VERDICT.match(line) and not VERDICT.match(line))
     owner: dict[int, list[int]] = {}  # nearest heading above -> its Verdict lines
@@ -147,7 +157,8 @@ def records(text: str) -> tuple[list[tuple[str, str]], int, list[str]]:
         else:
             owner.setdefault(h, []).append(v)
     found: list[tuple[str, str]] = []
-    covered: set[int] = set()
+    own_lines: set[int] = set()
+    subtree: set[int] = set()
     for n in sorted(owner):
         if len(owner[n]) > 1:
             stray += len(owner[n])
@@ -156,10 +167,16 @@ def records(text: str) -> tuple[list[tuple[str, str]], int, list[str]]:
         end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
         own = "\n".join(line for i, line in enumerate(lines[start:end], start) if not code[i])
         found.append((heads[n][1] or "（无标题）", own))
-        covered.update(range(start, end))
-    # a 复评日期 outside every record means a record that was not recognised (its Verdict is
-    # missing or malformed), even when another record in the file was read
-    orphan = [i + 1 for i, line in enumerate(lines) if not code[i] and i not in covered and DATE_LIKE.search(line)]
+        own_lines.update(range(start, end))
+        # the record's sub-sections: up to the next heading of the same or a higher level
+        tree_end = next((heads[k][0] for k in range(n + 1, len(heads)) if levels[k] <= levels[n]), len(lines))
+        subtree.update(range(start, tree_end))
+    # A record that was not recognised (its Verdict missing or malformed) shows up as a 复评日期
+    # nobody owns, even when another record in the file was read: any dated mention outside
+    # every record's sub-sections, or a "- 复评日期：" field line outside a record's own lines
+    # (a record nested under another one still has its own field line).
+    orphan = sorted({i + 1 for i, line in enumerate(lines) if not code[i] and (
+        (i not in subtree and DATE_LIKE.search(line)) or (i not in own_lines and DATE_FIELD.match(line)))})
     if orphan and found:
         problems.append(f"第 {', '.join(map(str, orphan[:5]))} 行的复评日期不属于任何记录（Verdict 缺失或写法无法识别）")
     return found, stray, problems

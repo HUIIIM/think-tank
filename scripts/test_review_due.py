@@ -231,6 +231,33 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "hedged: 达到——尚未核实": ({"a.md": record("TT-1", result="达到——尚未核实")}, [], 0, {"TT-1"}, set()),
     "hedged: 已取代（→ 新记录编号）": ({"a.md": record("TT-1", status="已取代（→ 新记录编号）")}, [], 0, {"TT-1"}, set()),
     "hedged: 达到 / 未达到": ({"a.md": record("TT-1", result="达到 / 未达到")}, [], 0, {"TT-1"}, set()),
+    "hedged: 达到——未复评": ({"a.md": record("TT-1", result="达到——未复评")}, [], 0, {"TT-1"}, set()),
+    "hedged: 达到——<证据>": ({"a.md": record("TT-1", result="达到——<证据>")}, [], 0, {"TT-1"}, set()),
+    "hedged: truncated menu 达到 /": ({"a.md": record("TT-1", result="达到 /")}, [], 0, {"TT-1"}, set()),
+    "hedged: 达到（或 /部分达到）": ({"a.md": record("TT-1", result="达到（或 /部分达到）")}, [], 0, {"TT-1"}, set()),
+    "evidence with a URL": ({"a.md": record("TT-1", result="达到——https://bi.example/r/1")}, [], 0, set(), set()),
+    "evidence with a path": ({"a.md": record("TT-1", result="达到——打开率 41%，见 ops/weekly 看板")}, [], 0, set(), set()),
+    "evidence with a rate": ({"a.md": record("TT-1", result="部分达到——周活 3 次/周")}, [], 0, set(), set()),
+    "evidence with 等待": ({"a.md": record("TT-1", result="达到——客户等待时长下降 30%")}, [], 0, set(), set()),
+    "evidence with 接待": ({"a.md": record("TT-1", result="未达到——接待量未变")}, [], 0, set(), set()),
+    "withdrawn with a slash in the note": ({"a.md": record("TT-1", status="已撤销——见 TT-5 / 会议纪要")}, [], 0, set(), set()),
+    "hedged: 达到TBD without a space": ({"a.md": record("TT-1", result="达到——TBD")}, [], 0, {"TT-1"}, set()),
+    "hedged: 已取代（→待定） without a space": ({"a.md": record("TT-1", status="已取代（→待定）")}, [], 0, {"TT-1"}, set()),
+    "hedged: 达到，待补数据": ({"a.md": record("TT-1", result="达到，待补数据")}, [], 0, {"TT-1"}, set()),
+    "review note in the record's own sub-section": (
+        {"a.md": record("TT-1", result="达到——0 次更正") + "### 复评记录\n\n- 原复评日期：2026-11-01，已按期复评。\n"}, [], 0, set(), set()
+    ),
+    "intro under the document title": ({"a.md": "# 决策记录\n\n> 复评日期：以下方字段为准。\n\n" + record("TT-1")}, [], 0, {"TT-1"}, set()),
+    "nested broken record under a good one": (
+        {"a.md": record("TT-1", review="2099-01-01") + "### TT-3\n- 结论：改\n- 复评日期：2026-01-01\n- 实际结果：待复评\n- 状态：已采纳\n"},
+        [], 0, set(), {"a.md"},
+    ),
+    "second record dated in a table": (
+        {"a.md": record("TT-2", review="2099-01-01") + "\n## TT-3\n| 结论 | 改 |\n| 复评日期 | 2026-01-01 |\n"}, [], 0, set(), {"a.md"}
+    ),
+    "second record dated without a colon": (
+        {"a.md": record("TT-2", review="2099-01-01") + "\n## TT-3\n- 结论：改\n- 复评日期 2026-01-01\n"}, [], 0, set(), {"a.md"}
+    ),
     "outcome with evidence": ({"a.md": record("TT-1", result="部分达到——见 TT-3 附件")}, [], 0, set(), set()),
     "Verdict only in prose": ({"a.md": "## 说明\n\n本文件说明 Verdict 的写法。\n"}, [], 0, set(), {"a.md"}),
     "hash without space is not a heading": ({"a.md": "#TT-1\n- Verdict：改。\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"a.md"}),
