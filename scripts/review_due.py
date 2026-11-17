@@ -10,8 +10,9 @@ a record; its fields are read from that section only.
 document title above, fenced code or HTML comments. Field names may be bold; the list
 marker may be "-" or "*".
 A record is due when its 复评日期 is on or before today, unless its 实际结果 starts with
-达到 / 未达到 / 部分达到 or its 状态 starts with 已取代 / 已撤销 (after spaces, emphasis,
-quotes and brackets are trimmed): anything unclear keeps the reminder.
+达到 / 未达到 / 部分达到 or its 状态 with 已取代（→ …） / 已撤销, each followed by the end of
+the value or a separator (after spaces, emphasis, quotes and brackets are trimmed):
+anything unclear keeps the reminder.
 Reported as errors:
 - a 复评日期 that is not exactly one YYYY-MM-DD date;
 - one of the three fields missing from the record's own lines (a copy under a sub-heading
@@ -22,7 +23,9 @@ Reported as errors:
 - a heading-like line that is not a heading (indented, no space after "#", seven or more
   "#", full-width "＃", a setext underline);
 - a fenced code block or HTML comment left open at the end of the file;
-- a file with Verdict or 复评日期 that yields no record, or that cannot be read as UTF-8.
+- a file with Verdict or 复评日期 that yields no record, or that cannot be read as UTF-8;
+- a directory that cannot be listed, a symlinked directory (not followed), or an archive
+  with no record files at all. An unreadable archive root exits 2.
 
 Usage: review_due.py <archive-dir> [--today YYYY-MM-DD] [--strict]
 --strict exits 1 when anything is due or in error; otherwise the exit status is 0.
@@ -30,6 +33,7 @@ Exit 2 if the directory does not exist. Uses only the standard library.
 """
 
 import argparse
+import os
 import re
 import sys
 from datetime import date
@@ -46,24 +50,29 @@ LOOSE_VERDICT = re.compile(
     r"^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?\**verdict\**[ \t]*(?:[（(][^）)\n]*[）)])?[ \t]*\**[：:]", re.I
 )
 # Looks like a heading to a reader but is not one here.
-HEADING_LIKE = re.compile(r" {1,3}#{1,6}[ \t]|#{1,6}[^# \t]|#{7,}|[ \t]*＃")
+HEADING_LIKE = re.compile(r" {1,3}#{1,6}[ \t]|#{1,6}[^# \t]|#{1,6}$|#{7,}|[ \t]*＃|[ \t]*<h[1-6][ \t>]", re.I)
 SETEXT = re.compile(r" {0,3}(=+|-+)[ \t]*")
 CHECKED = ("复评日期", "实际结果", "状态")
 # A line a reader would take for one of CHECKED that FIELD does not accept: a quote, table or
 # other list marker, a non-breaking or full-width space, a parenthesised note before the colon.
+# Indented lines are sub-items (e.g. a follow-up's own 状态) and are left alone.
 LOOSE_FIELD = re.compile(
-    r"^[\s>|+\-*\d.)\u3000\xa0]*\**(" + "|".join(CHECKED) + r")\**[\s\u3000\xa0]*(?:[（(][^）)\n]*[）)])?[\s\u3000\xa0]*\**[：:]"
+    r"^(?![ \t])[\s>|+\-*\d.)\u3000\xa0]*\**(" + "|".join(CHECKED) + r")\**[\s\u3000\xa0]*(?:[（(][^）)\n]*[）)])?[\s\u3000\xa0]*\**[：:]"
 )
-NOISE = " \t\u3000\xa0*`_\"'“”‘’「」『』（）()<>[]【】"
-REVIEWED = ("达到", "未达到", "部分达到")
+NOISE = " \t\u3000\xa0*`_\"'“”‘’「」『』（）()【】"
+# The keyword must end the value or be followed by a separator: "达到复评日期后再填" and
+# "已取代旧流程" are not outcomes.
+REVIEWED = re.compile(r"(?:部分达到|未达到|达到)(?:$|[\s—\-（(：:，,。；;→])")
+CLOSED = re.compile(r"(?:已取代(?:$|\s*[（(]?\s*→)|已撤销(?:$|[\s—\-（(：:，,。；;]))")
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
-CLOSED = ("已取代", "已撤销")
+SUFFIXES = (".md", ".markdown")
 
 
 def field(section: str, name: str) -> str | None:
-    """The value of a field line, with emphasis, quotes, brackets and spaces trimmed."""
+    """The value of a field line: emphasis and code marks removed, quotes, brackets and spaces
+    trimmed from both ends."""
     m = re.search(FIELD.format(name=name), section, re.M)
-    return m.group(1).strip(NOISE) if m else None
+    return re.sub(r"[*`]", "", m.group(1)).strip(NOISE) if m else None
 
 
 def count(section: str, name: str) -> int:
@@ -140,13 +149,33 @@ def records(text: str) -> tuple[list[tuple[str, str]], int, list[str]]:
     return found, stray, problems
 
 
-def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
-    due: list[str] = []
+def walk(root: Path) -> tuple[list[Path], list[str]]:
+    """Record files under root, and the directories that could not be listed or followed.
+
+    os.walk is used for its onerror hook: Path.rglob skips an unreadable directory silently."""
+    files: list[Path] = []
     errors: list[str] = []
-    for path in sorted(root.rglob("*")):
+
+    def unreadable(err: OSError) -> None:
+        where = Path(err.filename).relative_to(root) if err.filename else root
+        errors.append(f"ERROR {where}: 目录无法读取（{type(err).__name__}），其中的记录未检查")
+
+    for current, dirs, names in os.walk(root, onerror=unreadable):
+        here = Path(current)
+        for d in sorted(dirs):
+            if (here / d).is_symlink():
+                errors.append(f"ERROR {(here / d).relative_to(root)}: 符号链接目录不跟随，其中的记录未检查")
+        files += [here / n for n in names if Path(n).suffix.lower() in SUFFIXES]
+    return sorted(files), errors
+
+
+def scan(root: Path, today: date) -> tuple[list[str], list[str], int]:
+    due: list[str] = []
+    paths, errors = walk(root)
+    if not paths and not errors:
+        errors.append("ERROR .: 归档目录中没有 .md / .markdown 记录文件")
+    for path in paths:
         rel = path.relative_to(root)
-        if path.is_dir() or path.suffix.lower() not in (".md", ".markdown"):
-            continue
         try:
             # universal newlines: CRLF reads as LF; utf-8-sig drops a leading BOM
             text = path.read_text(encoding="utf-8-sig")
@@ -182,15 +211,17 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str]]:
                 continue
             # only an explicit outcome counts as reviewed and only an explicit status closes a
             # record: anything unclear keeps the reminder
-            reviewed = (field(own, "实际结果") or "").startswith(REVIEWED)
-            closed = (field(own, "状态") or "").startswith(CLOSED)
+            reviewed = REVIEWED.match(field(own, "实际结果") or "") is not None
+            closed = CLOSED.match(field(own, "状态") or "") is not None
             if when <= today and not reviewed and not closed:
                 due.append(f"DUE   {where}（复评日期 {when.isoformat()}）")
         if stray:
             errors.append(f"ERROR {rel}: 含 Verdict 但未解析出记录（{stray} 个 Verdict 字段行不在任何记录内）")
-        elif not found and ("Verdict" in text or re.search(r"复评日期[^\n]{0,8}[：:]", text)):
+        elif not found and "Verdict" in text:
             errors.append(f"ERROR {rel}: 含 Verdict 但未解析出记录（需要标题行与 \"- Verdict：\" 字段行）")
-    return due, errors
+        elif not found and re.search(r"复评日期[^\n]{0,8}[：:]", text):
+            errors.append(f"ERROR {rel}: 有复评日期但没有 \"- Verdict：\" 字段行，未解析出记录")
+    return due, errors, len(paths)
 
 
 def iso_date(value: str) -> date:
@@ -208,10 +239,15 @@ def main() -> int:
     if not a.archive.is_dir():
         print(f"不是目录：{a.archive}", file=sys.stderr)
         return 2
-    due, errors = scan(a.archive, a.today)
+    try:
+        os.scandir(a.archive).close()
+    except OSError as err:
+        print(f"无法读取归档目录：{a.archive}（{type(err).__name__}）", file=sys.stderr)
+        return 2
+    due, errors, scanned = scan(a.archive, a.today)
     for line in errors + due:
         print(line)
-    print(f"{len(due)} 条到期待复评，{len(errors)} 条错误（截至 {a.today.isoformat()}）")
+    print(f"扫描 {scanned} 个文件：{len(due)} 条到期待复评，{len(errors)} 条错误（截至 {a.today.isoformat()}）")
     return 1 if a.strict and (due or errors) else 0
 
 

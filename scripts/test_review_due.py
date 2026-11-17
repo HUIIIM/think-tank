@@ -7,7 +7,9 @@ check keeps the script's field names in step with references/decision-record-tem
 Exit status is non-zero if any expectation fails.
 """
 
+import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -18,7 +20,7 @@ SCRIPT = ROOT / "scripts" / "review_due.py"
 TEMPLATE = ROOT / "references" / "decision-record-template.md"
 TODAY = "2026-11-30"
 # ERROR messages about a whole file rather than one record
-FILE_LEVEL = ("无法读取", "含 Verdict", "第 ", "代码块或 HTML 注释")
+FILE_LEVEL = ("无法读取", "含 Verdict", "有复评日期", "第 ", "代码块或 HTML 注释", "目录无法读取", "符号链接目录", "归档目录中没有")
 
 
 def record(rid: str, review: str | None = "2026-11-30", result: str = "待复评", status: str = "已采纳") -> str:
@@ -195,6 +197,22 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     ),
     "loose status beside a proper one": ({"a.md": record("TT-1") + "> - 状态：已取代（→ TT-9）\n"}, [], 0, set(), {"TT-1"}),
     "table status beside a proper one": ({"a.md": record("TT-1") + "| 状态：已取代 |\n"}, [], 0, set(), {"TT-1"}),
+    "boundary: 达到 as a verb": ({"a.md": record("TT-1", result="达到复评日期后再填")}, [], 0, {"TT-1"}, set()),
+    "boundary: 未达到 as a verb": ({"a.md": record("TT-1", result="未达到复评日期，暂不填")}, [], 0, {"TT-1"}, set()),
+    "boundary: question mark": ({"a.md": record("TT-1", result="达到？待核实")}, [], 0, {"TT-1"}, set()),
+    "boundary: checkbox menu": ({"a.md": record("TT-1", result="[ ] 达到 [ ] 未达到 [ ] 部分达到")}, [], 0, {"TT-1"}, set()),
+    "boundary: template placeholder": ({"a.md": record("TT-1", result="<达到 / 未达到 / 部分达到——证据>")}, [], 0, {"TT-1"}, set()),
+    "boundary: result 达到 alone": ({"a.md": record("TT-1", result="达到")}, [], 0, set(), set()),
+    "boundary: 已取代旧流程 is not closed": ({"a.md": record("TT-1", status="已取代旧流程")}, [], 0, {"TT-1"}, set()),
+    "boundary: 已撤销旧方案 is not closed": ({"a.md": record("TT-1", status="已撤销旧方案，改为本方案")}, [], 0, {"TT-1"}, set()),
+    "boundary: 已取代 with arrow": ({"a.md": record("TT-1", status="已取代 → TT-9")}, [], 0, set(), set()),
+    "boundary: 已撤销 alone": ({"a.md": record("TT-1", status="已撤销")}, [], 0, set(), set()),
+    "bare ## is reported": ({"a.md": record("TT-1") + "##\n"}, [], 0, {"TT-1"}, {"a.md"}),
+    "HTML heading is reported": ({"a.md": record("TT-1") + "<h3>附录</h3>\n"}, [], 0, {"TT-1"}, {"a.md"}),
+    "indented sub-item status is left alone": (
+        {"a.md": record("TT-1") + "- 执行跟进项：\n  - 状态：已完成\n"}, [], 0, {"TT-1"}, set()
+    ),
+    "empty archive": ({"notes.txt": "随手记"}, [], 0, set(), {"."}),
     "Verdict only in prose": ({"a.md": "## 说明\n\n本文件说明 Verdict 的写法。\n"}, [], 0, set(), {"a.md"}),
     "hash without space is not a heading": ({"a.md": "#TT-1\n- Verdict：改。\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"a.md"}),
     "closing hashes dropped from name": ({"a.md": record("TT-1").replace("## TT-1（终裁·改，2026-10-30；示例议题）", "## TT-1 ##")}, [], 0, {"TT-1"}, set()),
@@ -217,6 +235,21 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
 def run(archive: Path, extra: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(SCRIPT), str(archive), "--today", TODAY, *extra],
+        capture_output=True, text=True, encoding="utf-8",
+    )
+
+
+def run_unprivileged(archive: Path, extra: list[str]) -> subprocess.CompletedProcess[str] | None:
+    """Run the script as a user that file permissions apply to: as is when not root, else
+    through setpriv as nobody. None when root cannot drop privileges here."""
+    prefix: list[str] = []
+    if os.geteuid() == 0:
+        setpriv = shutil.which("setpriv")
+        if not setpriv:
+            return None
+        prefix = [setpriv, "--reuid=65534", "--regid=65534", "--clear-groups"]
+    return subprocess.run(
+        [*prefix, sys.executable, str(SCRIPT), str(archive), "--today", TODAY, *extra],
         capture_output=True, text=True, encoding="utf-8",
     )
 
@@ -259,9 +292,47 @@ def main() -> int:
     failures += not ok
     print(f"{'ok ' if ok else 'BAD'} broken symlink then a good file -> {got}")
     with tempfile.TemporaryDirectory() as tmp:
+        (Path(tmp) / "real").mkdir()
+        (Path(tmp) / "real" / "a.md").write_text(record("TT-1"), encoding="utf-8")
+        (Path(tmp) / "link").symlink_to(Path(tmp) / "real", target_is_directory=True)
+        r = run(Path(tmp), [])
+    got = (r.returncode, ids(r.stdout, "DUE"), ids(r.stdout, "ERROR"))
+    ok = got == (0, {"TT-1"}, {"link"})
+    failures += not ok
+    print(f"{'ok ' if ok else 'BAD'} symlinked directory is reported, not followed -> {got}")
+    # an unreadable directory must be an ERROR, never a silent "nothing due"
+    with tempfile.TemporaryDirectory() as tmp:
+        base = Path(tmp)
+        base.chmod(0o755)
+        (base / "ok").mkdir()
+        (base / "ok" / "a.md").write_text(record("TT-1", review="2027-01-01"), encoding="utf-8")
+        (base / "locked").mkdir()
+        (base / "locked" / "b.md").write_text(record("TT-2"), encoding="utf-8")
+        for path in (base / "ok", base / "ok" / "a.md", base / "locked" / "b.md"):
+            path.chmod(0o755)
+        (base / "locked").chmod(0o000)
+        sub = run_unprivileged(base, ["--strict"])
+        (base / "locked").chmod(0o755)
+        (base / "shut").mkdir(mode=0o700)
+        (base / "shut" / "c.md").write_text(record("TT-3"), encoding="utf-8")
+        (base / "shut").chmod(0o000)
+        top = run_unprivileged(base / "shut", ["--strict"])
+        (base / "shut").chmod(0o755)
+    if sub is None or top is None:
+        failures += 1
+        print("BAD unreadable directories: running as root and cannot drop privileges (no setpriv)")
+    else:
+        got = (sub.returncode, ids(sub.stdout, "DUE"), ids(sub.stdout, "ERROR"))
+        ok = got == (1, set(), {"locked"})
+        failures += not ok
+        print(f"{'ok ' if ok else 'BAD'} unreadable sub-directory is an error -> {got}")
+        ok = top.returncode == 2
+        failures += not ok
+        print(f"{'ok ' if ok else 'BAD'} unreadable archive root exits 2 -> {top.returncode}")
+    with tempfile.TemporaryDirectory() as tmp:
         r = run(Path(tmp), [])
         bad = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", "20261130"], capture_output=True, text=True)
-    ok = r.returncode == 0 and bad.returncode == 2
+    ok = r.returncode == 0 and bad.returncode == 2  # r: an empty archive is an error, but not --strict
     failures += not ok
     print(f"{'ok ' if ok else 'BAD'} --today accepts only YYYY-MM-DD -> {bad.returncode}")
     with tempfile.TemporaryDirectory() as tmp:
@@ -274,7 +345,7 @@ def main() -> int:
         ok = needle in template
         failures += not ok
         print(f"{'ok ' if ok else 'BAD'} template has {needle!r}")
-    total = len(CASES) + 7
+    total = len(CASES) + 10
     print(f"{total - failures}/{total} review_due fixtures behaved as expected")
     return 1 if failures else 0
 
