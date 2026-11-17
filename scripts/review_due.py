@@ -9,13 +9,15 @@ a record; its fields are read from that section only.
 (before any sub-heading); they are never read from sub-sections, sibling sections, a
 document title above, fenced code or HTML comments. Field names may be bold; the list
 marker may be "-" or "*".
-A record is due when its 复评日期 is on or before today, unless its 实际结果 starts with
-达到 / 未达到 / 部分达到 or its 状态 with 已取代（→ <record ID>） / 已撤销, each followed by the
-end of the value or a separator (after spaces, emphasis, quotes and brackets are trimmed),
-and the value is not hedged ("待…", TBD, "/" as in the template's menu): anything unclear
-keeps the reminder.
+A record is due when its 复评日期 is on or before today, unless its 状态 is exactly one of
+已复评（YYYY-MM-DD）, 已取代（→ <record ID>） or 已撤销（YYYY-MM-DD）, with a valid date not
+after today (half-width brackets also accepted). 实际结果 never closes a record on its own:
+free text cannot be told apart from a hedge, so anything but an exact closing 状态 keeps the
+reminder.
 Reported as errors:
 - a 复评日期 that is not exactly one YYYY-MM-DD date;
+- a 状态 that starts like a closing value but is not one exactly, or carries an invalid or
+  future date; a 状态 of 已复评 whose 实际结果 does not start with 达到 / 未达到 / 部分达到;
 - one of the three fields missing from the record's own lines (a copy under a sub-heading
   does not count), written twice there, or written there in a form the field pattern does
   not accept (a quote, a table, a note before the colon, a non-breaking or full-width space);
@@ -65,28 +67,45 @@ LOOSE_FIELD = re.compile(
     r"^(?![ \t])[\s>|+\-*\d.)\u3000\xa0]*\**(" + "|".join(CHECKED) + r")\**[\s\u3000\xa0]*(?:[（(][^）)\n]*[）)])?[\s\u3000\xa0]*\**[：:]"
 )
 NOISE = " \t\u3000\xa0*`_\"'“”‘’「」『』（）()【】"
-# The keyword must end the value or be followed by a separator: "达到复评日期后再填" and
-# "已取代旧流程" are not outcomes.
-REVIEWED = re.compile(r"(?:部分达到|未达到|达到)(?:$|[\s—\-（(：:，,。；;→])")
-# 已取代 needs the "→ <record ID>" the template asks for; 已撤销 may stand alone.
-CLOSED = re.compile(r"(?:已取代\s*[（(]?\s*→\s*[^\s）)]|已撤销(?:$|[\s—\-（(：:，,。；;]))")
-# A value still hedged or copied from the template's menu is not an outcome: it keeps the reminder.
-# A hedge keeps the reminder. Any "待" counts except in a few everyday words (等待, 接待…), so a
-# hedge that is not on a list still reminds; so do other markers of an unfinished value and a
-# copied "达到 / 未达到" menu. Ordinary evidence (a URL, a path, "3 次/周") is not matched.
-OUTCOME_WORD = r"(?:部分达到|未达到|达到|已取代|已撤销)"
-PENDING = re.compile(
-    r"(?<![等接招款对看优虐善亏期])待|等待(?=确认|复评|核|补|数据|结果)|尚未|未复评|未核实|未确认|暂定|占位|记录编号"
-    r"|(?<![A-Za-z])(?:TBD|TBC|TODO|WIP|pending|x{3,})(?![A-Za-z])"
-    r"|<[^>]*>|？|\?(?=$|[\s）)])|…|\.\.\."
-    rf"|{OUTCOME_WORD}\s*(?:[/／]|或)|(?:[/／]|或)\s*{OUTCOME_WORD}",
-    re.I,
-)
+# Only an exact 状态 value closes a record; free text in 实际结果 never does, because no pattern
+# can tell every hedge ("证据待补", "等待验证", "N/A") from an outcome.
+RECORD_ID = r"[A-Za-z]+-[A-Za-z0-9-]*\d[A-Za-z0-9-]*"
+STATUS_REVIEWED = re.compile(r"已复评[（(](\d{4}-\d{2}-\d{2})[）)]")
+STATUS_REPLACED = re.compile(rf"已取代[（(]\s*→\s*{RECORD_ID}\s*[）)]")
+STATUS_WITHDRAWN = re.compile(r"已撤销[（(](\d{4}-\d{2}-\d{2})[）)]")
+STATUS_FINAL = ("已复评", "已取代", "已撤销")
+OUTCOME = re.compile(r"(?:部分达到|未达到|达到)(?:$|[\s—\-（(：:，,。；;])")
 # 复评日期 followed, within a few characters, by a year: a field line, a table cell or prose
 DATE_LIKE = re.compile(r"复评日期[^\n\d]{0,8}?[\s：:|*`]\s*[*`]*\s*\d{4}")
 DATE_FIELD = re.compile(FIELD.format(name="复评日期"))
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 SUFFIXES = (".md", ".markdown")
+
+
+def status_value(section: str) -> str:
+    """The 状态 value with emphasis and code marks removed and outer spaces trimmed; its
+    brackets are kept, they are part of the closed forms."""
+    m = re.search(FIELD.format(name="状态"), section, re.M)
+    return re.sub(r"[*`]", "", m.group(1)).strip(" \t\u3000\xa0") if m else ""
+
+
+def closing(status: str, today: date) -> tuple[bool, str | None]:
+    """(closed, problem): closed only for an exact 已复评（date）, 已取代（→ ID） or 已撤销（date）
+    with a valid date not after today; a value that starts like one but is not is a problem."""
+    if STATUS_REPLACED.fullmatch(status):
+        return True, None
+    m = STATUS_REVIEWED.fullmatch(status) or STATUS_WITHDRAWN.fullmatch(status)
+    if m:
+        try:
+            when = date.fromisoformat(m.group(1))
+        except ValueError:
+            return False, f"状态里的日期不合法（{status}）"
+        if when > today:
+            return False, f"状态里的日期晚于今天（{status}）"
+        return True, None
+    if status.startswith(STATUS_FINAL):
+        return False, f"状态写法无法识别（{status[:30]}），须为 已复评（YYYY-MM-DD）/ 已取代（→ 记录编号）/ 已撤销（YYYY-MM-DD）"
+    return False, None
 
 
 def field(section: str, name: str) -> str | None:
@@ -255,13 +274,16 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str], int]:
             except ValueError:
                 errors.append(f"ERROR {where}: 复评日期缺失或不是 YYYY-MM-DD（{raw!r}）")
                 continue
-            # only an explicit outcome counts as reviewed and only an explicit status closes a
-            # record: anything unclear keeps the reminder
-            result = field(own, "实际结果") or ""
-            status = field(own, "状态") or ""
-            reviewed = REVIEWED.match(result) is not None and not PENDING.search(result)
-            closed = CLOSED.match(status) is not None and not PENDING.search(status)
-            if when <= today and not reviewed and not closed:
+            # only an exact closing 状态 ends the reminders; anything else keeps them
+            status = status_value(own)
+            closed, problem = closing(status, today)
+            if problem:
+                errors.append(f"ERROR {where}: {problem}")
+                continue
+            if status.startswith("已复评") and not OUTCOME.match(field(own, "实际结果") or ""):
+                errors.append(f"ERROR {where}: 状态为已复评，但实际结果不是以 达到 / 未达到 / 部分达到 开头")
+                continue
+            if when <= today and not closed:
                 due.append(f"DUE   {where}（复评日期 {when.isoformat()}）")
         if stray:
             errors.append(f"ERROR {rel}: 含 Verdict 但未解析出记录（{stray} 个 Verdict 字段行不在任何记录内）")
