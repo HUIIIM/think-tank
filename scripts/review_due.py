@@ -10,9 +10,10 @@ a record; its fields are read from that section only.
 document title above, fenced code or HTML comments. Field names may be bold; the list
 marker may be "-" or "*".
 A record is due when its 复评日期 is on or before today, unless its 实际结果 starts with
-达到 / 未达到 / 部分达到 or its 状态 with 已取代（→ …） / 已撤销, each followed by the end of
-the value or a separator (after spaces, emphasis, quotes and brackets are trimmed):
-anything unclear keeps the reminder.
+达到 / 未达到 / 部分达到 or its 状态 with 已取代（→ <record ID>） / 已撤销, each followed by the
+end of the value or a separator (after spaces, emphasis, quotes and brackets are trimmed),
+and the value is not hedged ("待…", TBD, "/" as in the template's menu): anything unclear
+keeps the reminder.
 Reported as errors:
 - a 复评日期 that is not exactly one YYYY-MM-DD date;
 - one of the three fields missing from the record's own lines (a copy under a sub-heading
@@ -24,8 +25,10 @@ Reported as errors:
   "#", full-width "＃", a setext underline);
 - a fenced code block or HTML comment left open at the end of the file;
 - a file with Verdict or 复评日期 that yields no record, or that cannot be read as UTF-8;
-- a directory that cannot be listed, a symlinked directory (not followed), or an archive
-  with no record files at all. An unreadable archive root exits 2.
+- a 复评日期 line outside every record in a file where another record was read;
+- a directory that cannot be listed, a symlinked directory (not followed), a broken
+  symlink, a *.md that is not a regular file, or an archive with no record files at all.
+  An unreadable archive root exits 2.
 
 Usage: review_due.py <archive-dir> [--today YYYY-MM-DD] [--strict]
 --strict exits 1 when anything is due or in error; otherwise the exit status is 0.
@@ -33,8 +36,10 @@ Exit 2 if the directory does not exist. Uses only the standard library.
 """
 
 import argparse
+import io
 import os
 import re
+import stat
 import sys
 from datetime import date
 from pathlib import Path
@@ -63,7 +68,11 @@ NOISE = " \t\u3000\xa0*`_\"'“”‘’「」『』（）()【】"
 # The keyword must end the value or be followed by a separator: "达到复评日期后再填" and
 # "已取代旧流程" are not outcomes.
 REVIEWED = re.compile(r"(?:部分达到|未达到|达到)(?:$|[\s—\-（(：:，,。；;→])")
-CLOSED = re.compile(r"(?:已取代(?:$|\s*[（(]?\s*→)|已撤销(?:$|[\s—\-（(：:，,。；;]))")
+# 已取代 needs the "→ <record ID>" the template asks for; 已撤销 may stand alone.
+CLOSED = re.compile(r"(?:已取代\s*[（(]?\s*→\s*[^\s）)]|已撤销(?:$|[\s—\-（(：:，,。；;]))")
+# A value still hedged or copied from the template's menu is not an outcome: it keeps the reminder.
+PENDING = re.compile(r"待|TBD|TODO|尚未|未复评|记录编号|证据>|[/／]", re.I)
+DATE_LIKE = re.compile(r"复评日期[^\n]{0,8}[：:]")
 ISO_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 SUFFIXES = (".md", ".markdown")
 
@@ -138,6 +147,7 @@ def records(text: str) -> tuple[list[tuple[str, str]], int, list[str]]:
         else:
             owner.setdefault(h, []).append(v)
     found: list[tuple[str, str]] = []
+    covered: set[int] = set()
     for n in sorted(owner):
         if len(owner[n]) > 1:
             stray += len(owner[n])
@@ -146,6 +156,12 @@ def records(text: str) -> tuple[list[tuple[str, str]], int, list[str]]:
         end = heads[n + 1][0] if n + 1 < len(heads) else len(lines)
         own = "\n".join(line for i, line in enumerate(lines[start:end], start) if not code[i])
         found.append((heads[n][1] or "（无标题）", own))
+        covered.update(range(start, end))
+    # a 复评日期 outside every record means a record that was not recognised (its Verdict is
+    # missing or malformed), even when another record in the file was read
+    orphan = [i + 1 for i, line in enumerate(lines) if not code[i] and i not in covered and DATE_LIKE.search(line)]
+    if orphan and found:
+        problems.append(f"第 {', '.join(map(str, orphan[:5]))} 行的复评日期不属于任何记录（Verdict 缺失或写法无法识别）")
     return found, stray, problems
 
 
@@ -165,7 +181,12 @@ def walk(root: Path) -> tuple[list[Path], list[str]]:
         for d in sorted(dirs):
             if (here / d).is_symlink():
                 errors.append(f"ERROR {(here / d).relative_to(root)}: 符号链接目录不跟随，其中的记录未检查")
-        files += [here / n for n in names if Path(n).suffix.lower() in SUFFIXES]
+        for n in sorted(names):
+            path = here / n
+            if path.suffix.lower() in SUFFIXES:
+                files.append(path)
+            elif path.is_symlink() and not path.exists():
+                errors.append(f"ERROR {path.relative_to(root)}: 断开的符号链接（可能是未挂载的目录），其中的记录未检查")
     return sorted(files), errors
 
 
@@ -177,6 +198,10 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str], int]:
     for path in paths:
         rel = path.relative_to(root)
         try:
+            # a FIFO or device named *.md would block or read as empty
+            if not stat.S_ISREG(path.stat().st_mode):
+                errors.append(f"ERROR {rel}: 不是普通文件，未读取")
+                continue
             # universal newlines: CRLF reads as LF; utf-8-sig drops a leading BOM
             text = path.read_text(encoding="utf-8-sig")
         except (OSError, UnicodeDecodeError) as err:
@@ -211,8 +236,10 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str], int]:
                 continue
             # only an explicit outcome counts as reviewed and only an explicit status closes a
             # record: anything unclear keeps the reminder
-            reviewed = REVIEWED.match(field(own, "实际结果") or "") is not None
-            closed = CLOSED.match(field(own, "状态") or "") is not None
+            result = field(own, "实际结果") or ""
+            status = field(own, "状态") or ""
+            reviewed = REVIEWED.match(result) is not None and not PENDING.search(result)
+            closed = CLOSED.match(status) is not None and not PENDING.search(status)
             if when <= today and not reviewed and not closed:
                 due.append(f"DUE   {where}（复评日期 {when.isoformat()}）")
         if stray:
@@ -236,6 +263,9 @@ def main() -> int:
     ap.add_argument("--today", type=iso_date, default=date.today())
     ap.add_argument("--strict", action="store_true", help="有到期或错误时退出码为 1")
     a = ap.parse_args()
+    # a file name that is not valid UTF-8 must not crash the run and drop the lines after it
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(errors="backslashreplace")
     if not a.archive.is_dir():
         print(f"不是目录：{a.archive}", file=sys.stderr)
         return 2

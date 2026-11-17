@@ -12,9 +12,9 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 - 决策结果回路（SOTA 路线图第 6 项）/ decision outcome loop (roadmap item 6):
   - `references/decision-record-template.md` 新增"置信度""预期结果""复评日期""实际结果""状态"五个字段，以及填写纪律第 6、7 条（复评时对照预期与置信度、被取代时改状态不删记录；真实记录不进本公开仓库）/ confidence, expected outcome, review date, actual outcome and status fields; real records stay out of this public repo.
   - `scripts/review_due.py`：列出归档目录中到期待复评的记录。判定一律"拿不准就提醒"：
-    - 只有以"达到 / 未达到 / 部分达到"开头（其后为结尾或分隔符）的实际结果才算已复评，只有"已取代（→ …）/ 已撤销"才算关闭；
+    - 只有以"达到 / 未达到 / 部分达到"开头（其后为结尾或分隔符）的实际结果才算已复评，只有"已取代（→ 记录编号）/ 已撤销"才算关闭，值里带"待…"、TBD、"/"（照抄菜单）的仍提醒；同一文件里落在所有已识别记录之外的复评日期报为错误；
     - "复评日期""实际结果""状态"只从记录自己的行（标题到下一个标题）读取，须各写恰好一次，缺写、重复或写法无法识别都报为错误，子小节里讲别的记录的同名字段不读；
-    - 复评日期只认 YYYY-MM-DD；像标题却不是的行（缩进、`#` 后无空格、单独的 `##`、setext、HTML 标题）、未闭合的代码块或 HTML 注释、读不出记录的文件、无法按 UTF-8 读取的文件、无法读取的目录、符号链接目录、空归档都报为错误；归档根目录不可读时退出码 2；
+    - 复评日期只认 YYYY-MM-DD；像标题却不是的行（缩进、`#` 后无空格、单独的 `##`、setext、HTML 标题）、未闭合的代码块或 HTML 注释、读不出记录的文件、无法按 UTF-8 读取的文件、无法读取的目录、符号链接目录、断开的符号链接、不是普通文件的 `.md`（FIFO 等，不再挂起）、空归档都报为错误；非 UTF-8 文件名不再导致输出中断；归档根目录不可读时退出码 2；
     - `.md`、`.markdown`（不分大小写）都扫描，汇总行写明扫描了几个文件；`--strict` 时有到期或错误则退出码 1；`scripts/test_review_due.py` 夹具测试，接入 CI 的 lint 任务 / lists records due for review; fixture tests run in CI.
   - 验收：`evals/smoke-15.md`（smoke-09 输入，新模板，标准运行前写定，独立评分 PASS 6/6）；旧模板产出的 smoke-05、11、14 记录在 `review_due.py --strict` 下均报缺少复评日期等字段 / acceptance run smoke-15 passes; old-template records fail the check.
 - 供应链与 SAST（处理 #7 N-4 的 SEC-2/3/4 与 persist-credentials 部分，Scorecard 分数合并后复核；vertciti STANDARDS SEC-2/3/4）：新增 CodeQL（python、actions）与 dependency-review 工作流（取自组织模板，按 SHA 固定）；Dependabot 增加 pip（`/.github` 的 lint 依赖）；gitleaks、CodeQL、dependency-review 的 checkout 设 `persist-credentials: false` / supply chain: CodeQL and dependency-review workflows, Dependabot for pip, no persisted git credentials.

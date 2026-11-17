@@ -20,7 +20,7 @@ SCRIPT = ROOT / "scripts" / "review_due.py"
 TEMPLATE = ROOT / "references" / "decision-record-template.md"
 TODAY = "2026-11-30"
 # ERROR messages about a whole file rather than one record
-FILE_LEVEL = ("无法读取", "含 Verdict", "有复评日期", "第 ", "代码块或 HTML 注释", "目录无法读取", "符号链接目录", "归档目录中没有")
+FILE_LEVEL = ("无法读取", "含 Verdict", "有复评日期", "第 ", "代码块或 HTML 注释", "目录无法读取", "符号链接目录", "归档目录中没有", "断开的符号链接", "不是普通文件")
 
 
 def record(rid: str, review: str | None = "2026-11-30", result: str = "待复评", status: str = "已采纳") -> str:
@@ -75,7 +75,7 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     ),
     # the three fields must sit directly under the record heading; under a sub-heading they are missing
     "sub-heading after Verdict": (
-        {"a.md": record("TT-1").replace("- 复评日期：", "### 三队观点\n\n- 红队：示例。\n- 复评日期：")}, [], 0, set(), {"TT-1"}
+        {"a.md": record("TT-1").replace("- 复评日期：", "### 三队观点\n\n- 红队：示例。\n- 复评日期：")}, [], 0, set(), {"TT-1", "a.md"}
     ),
     "sub-heading after the fields is fine": ({"a.md": record("TT-1") + "### 三队观点\n\n- 红队：示例。\n"}, [], 0, {"TT-1"}, set()),
     # the record is the deepest heading holding the Verdict, so it is listed under that heading's name
@@ -94,7 +94,7 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "document title, earlier sibling has fields": (
         {"a.md": "# 决策记录 TT-2\n\n## 关联记录\n\n- TT-1：周报改周一\n- 状态：已取代（→ TT-2）\n"
                  "- 实际结果：达到——TT-0\n- 复评日期：2099-01-01\n\n" + record("TT-2")},
-        [], 0, {"TT-2"}, set(),
+        [], 0, {"TT-2"}, {"a.md"},
     ),
     "fields in a code block are not read": (
         {"a.md": record("TT-1", review=None).replace("- Verdict：改——示例。", "- Verdict：改——示例。\n```\n- 复评日期：2026-11-30\n```")},
@@ -123,12 +123,12 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
         [], 0, set(), {"a.md"},
     ),
     "later sibling section lends nothing": (
-        {"a.md": record("TT-1", review=None) + "\n## 附录\n\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"TT-1"}
+        {"a.md": record("TT-1", review=None) + "\n## 附录\n\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"TT-1", "a.md"}
     ),
     "B2: sibling sub-section inside the record": (
         {"a.md": "## TT-2\n- Verdict：改\n### 关联记录\n- 状态：已取代（→ TT-2）\n### 复评\n"
                  "- 复评日期：2026-11-01\n- 实际结果：待复评\n- 状态：已采纳\n"},
-        [], 0, set(), {"TT-2"},
+        [], 0, set(), {"TT-2", "a.md"},
     ),
     "B2: status twice": ({"a.md": record("TT-1", status="已取代（→ TT-9）") + "- 状态：已采纳\n"}, [], 0, set(), {"TT-1"}),
     "B2: review date twice": ({"a.md": record("TT-1", review="2027-06-01") + "- 复评日期：2026-11-01\n"}, [], 0, set(), {"TT-1"}),
@@ -213,6 +213,25 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
         {"a.md": record("TT-1") + "- 执行跟进项：\n  - 状态：已完成\n"}, [], 0, {"TT-1"}, set()
     ),
     "empty archive": ({"notes.txt": "随手记"}, [], 0, set(), {"."}),
+    "second record with a bad Verdict": (
+        {"a.md": record("TT-2", review="2099-01-01") + "\n" + record("TT-3").replace("- Verdict：", "- 结论：")}, [], 0, set(), {"a.md"}
+    ),
+    "second record in a quote": (
+        {"a.md": record("TT-2", review="2099-01-01") + "\n## TT-3\n" + "".join("> " + ln + "\n" for ln in record("TT-3").splitlines()[1:])},
+        [], 0, set(), {"a.md"},
+    ),
+    "hedged: 达到（待确认）": ({"a.md": record("TT-1", result="达到（待确认）")}, [], 0, {"TT-1"}, set()),
+    "hedged: 达到 TBD": ({"a.md": record("TT-1", result="达到 TBD")}, [], 0, {"TT-1"}, set()),
+    "hedged: 部分达到（尚未复评）": ({"a.md": record("TT-1", result="部分达到（尚未复评）")}, [], 0, {"TT-1"}, set()),
+    "hedged: spaced template menu": ({"a.md": record("TT-1", result="达到 / 未达到 / 部分达到——<证据或记录编号>")}, [], 0, {"TT-1"}, set()),
+    "hedged: 已撤销 待确认": ({"a.md": record("TT-1", status="已撤销 待确认")}, [], 0, {"TT-1"}, set()),
+    "hedged: 已取代（→ 待定）": ({"a.md": record("TT-1", status="已取代（→ 待定）")}, [], 0, {"TT-1"}, set()),
+    "hedged: 已取代 with no target": ({"a.md": record("TT-1", status="已取代 →")}, [], 0, {"TT-1"}, set()),
+    "hedged: template status menu": ({"a.md": record("TT-1", status="已取代（→ 新记录编号）/ 已撤销")}, [], 0, {"TT-1"}, set()),
+    "hedged: 达到——尚未核实": ({"a.md": record("TT-1", result="达到——尚未核实")}, [], 0, {"TT-1"}, set()),
+    "hedged: 已取代（→ 新记录编号）": ({"a.md": record("TT-1", status="已取代（→ 新记录编号）")}, [], 0, {"TT-1"}, set()),
+    "hedged: 达到 / 未达到": ({"a.md": record("TT-1", result="达到 / 未达到")}, [], 0, {"TT-1"}, set()),
+    "outcome with evidence": ({"a.md": record("TT-1", result="部分达到——见 TT-3 附件")}, [], 0, set(), set()),
     "Verdict only in prose": ({"a.md": "## 说明\n\n本文件说明 Verdict 的写法。\n"}, [], 0, set(), {"a.md"}),
     "hash without space is not a heading": ({"a.md": "#TT-1\n- Verdict：改。\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"a.md"}),
     "closing hashes dropped from name": ({"a.md": record("TT-1").replace("## TT-1（终裁·改，2026-10-30；示例议题）", "## TT-1 ##")}, [], 0, {"TT-1"}, set()),
@@ -292,6 +311,29 @@ def main() -> int:
     failures += not ok
     print(f"{'ok ' if ok else 'BAD'} broken symlink then a good file -> {got}")
     with tempfile.TemporaryDirectory() as tmp:
+        (Path(tmp) / "2025").symlink_to(Path(tmp) / "unmounted")
+        os.mkfifo(Path(tmp) / "pipe.md")
+        (Path(tmp) / "b.md").write_text(record("TT-1"), encoding="utf-8")
+        try:
+            r = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", TODAY], capture_output=True, text=True, timeout=20)
+            got = (r.returncode, ids(r.stdout, "DUE"), ids(r.stdout, "ERROR"))
+        except subprocess.TimeoutExpired:
+            got = (-1, set(), {"hung"})
+    ok = got == (0, {"TT-1"}, {"2025", "pipe.md"})
+    failures += not ok
+    print(f"{'ok ' if ok else 'BAD'} broken directory link and FIFO are errors, not skipped or hung -> {got}")
+    with tempfile.TemporaryDirectory() as tmp:
+        bad_name = os.fsencode(tmp) + b"/x\xff.md"
+        with open(bad_name, "wb") as f:
+            f.write(record("TT-1").encode("utf-8"))
+        (Path(tmp) / "y.md").write_text(record("TT-2"), encoding="utf-8")
+        strict_env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+        byte_run = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", TODAY], capture_output=True, env=strict_env)
+    out = byte_run.stdout.decode("utf-8", "replace")
+    ok = byte_run.returncode == 0 and out.count("DUE") == 2
+    failures += not ok
+    print(f"{'ok ' if ok else 'BAD'} non-UTF-8 file name under a strict stdout -> rc {byte_run.returncode}, {out.count('DUE')} DUE")
+    with tempfile.TemporaryDirectory() as tmp:
         (Path(tmp) / "real").mkdir()
         (Path(tmp) / "real" / "a.md").write_text(record("TT-1"), encoding="utf-8")
         (Path(tmp) / "link").symlink_to(Path(tmp) / "real", target_is_directory=True)
@@ -345,7 +387,7 @@ def main() -> int:
         ok = needle in template
         failures += not ok
         print(f"{'ok ' if ok else 'BAD'} template has {needle!r}")
-    total = len(CASES) + 10
+    total = len(CASES) + 12
     print(f"{total - failures}/{total} review_due fixtures behaved as expected")
     return 1 if failures else 0
 
