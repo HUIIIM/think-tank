@@ -11,13 +11,20 @@ document title above, fenced code or HTML comments. Field names may be bold; the
 marker may be "-" or "*".
 A record is due when its 复评日期 is on or before today, unless its 状态 is exactly one of
 已复评（YYYY-MM-DD）, 已取代（→ <record ID>） or 已撤销（YYYY-MM-DD）, with a valid date not
-after today (half-width brackets also accepted). 实际结果 never closes a record on its own:
+after today and, for 已复评 / 已撤销, not before the record's own 复评日期 (half-width
+brackets also accepted). 实际结果 never closes a record on its own:
 free text cannot be told apart from a hedge, so anything but an exact closing 状态 keeps the
-reminder.
+reminder. A due line for a record whose 实际结果 already starts with an outcome word
+carries a hint that only the 状态 is missing.
 Reported as errors:
 - a 复评日期 that is not exactly one YYYY-MM-DD date;
 - a 状态 that starts like a closing value but is not one exactly, or carries an invalid or
   future date; a 状态 of 已复评 whose 实际结果 does not start with 达到 / 未达到 / 部分达到;
+- a 已复评 / 已撤销 date earlier than the record's own 复评日期 (a copied record whose 状态
+  was never reset); a 状态 that starts with 已 but is neither 提议 / 已采纳 nor an exact
+  closing value; a 已取代 naming a record ID that no record in the archive carries;
+  a 状态 of 已复评 whose 实际结果 is still the template talking (a <...> placeholder, the
+  menu copied verbatim as "达到 / 未达到 / ...", or 证据待补);
 - one of the three fields missing from the record's own lines (a copy under a sub-heading
   does not count), written twice there, or written there in a form the field pattern does
   not accept (a quote, a table, a note before the colon, a non-breaking or full-width space);
@@ -75,6 +82,12 @@ STATUS_REPLACED = re.compile(rf"已取代[（(]\s*→\s*{RECORD_ID}\s*[）)]")
 STATUS_WITHDRAWN = re.compile(r"已撤销[（(](\d{4}-\d{2}-\d{2})[）)]")
 STATUS_FINAL = ("已复评", "已取代", "已撤销")
 OUTCOME = re.compile(r"(?:部分达到|未达到|达到)(?:$|[\s—\-（(：:，,。；;])")
+# A reviewed outcome that is still the template talking: a <...> placeholder, or the menu
+# copied verbatim (an outcome word directly followed by " /"). Everyday words that merely
+# contain the same characters (a URL, "3 次/周", 期待, 等待) are not template copies.
+TEMPLATE_PLACEHOLDER = re.compile(r"<[^>\n]*>")
+MENU_COPY = re.compile(r"(?:部分达到|未达到|达到)[ \t]*/")
+OPEN_STATUS = ("提议", "已采纳")
 # 复评日期 followed, within a few characters, by a year: a field line, a table cell or prose
 DATE_LIKE = re.compile(r"复评日期[^\n\d]{0,8}?[\s：:|*`]\s*[*`]*\s*\d{4}")
 DATE_FIELD = re.compile(FIELD.format(name="复评日期"))
@@ -233,6 +246,8 @@ def walk(root: Path) -> tuple[list[Path], list[str]]:
 def scan(root: Path, today: date) -> tuple[list[str], list[str], int]:
     due: list[str] = []
     paths, errors = walk(root)
+    archive_ids: set[str] = set()
+    replaced_refs: list[tuple[str, str]] = []
     if not paths and not errors:
         errors.append("ERROR .: 归档目录中没有 .md / .markdown 记录文件")
     for path in paths:
@@ -251,6 +266,9 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str], int]:
         errors += [f"ERROR {rel}: {p}" for p in problems]
         for title, own in found:
             where = f"{rel}: {title}"
+            m_id = re.search(rf"(?<![A-Za-z0-9-])({RECORD_ID})(?![A-Za-z0-9-])", title)
+            if m_id:
+                archive_ids.add(m_id.group(1))
             loose = [line.strip() for line in own.split("\n")
                      if LOOSE_FIELD.match(line) and not any(re.match(FIELD.format(name=n), line) for n in CHECKED)]
             if loose:
@@ -283,14 +301,38 @@ def scan(root: Path, today: date) -> tuple[list[str], list[str], int]:
             if status.startswith("已复评") and not OUTCOME.match(field(own, "实际结果") or ""):
                 errors.append(f"ERROR {where}: 状态为已复评，但实际结果不是以 达到 / 未达到 / 部分达到 开头")
                 continue
+            outcome = field(own, "实际结果") or ""
+            if STATUS_REVIEWED.fullmatch(status) and (
+                TEMPLATE_PLACEHOLDER.search(outcome)
+                or MENU_COPY.search(outcome)
+                or "待补" in outcome
+            ):
+                errors.append(f"ERROR {where}: 状态为已复评，但实际结果仍是模板照抄或证据待补（{outcome[:30]}），复评未完成")
+                continue
+            if not closed and status.startswith("已") and status not in OPEN_STATUS:
+                errors.append(f"ERROR {where}: 状态写法无法识别（{status[:30]}），须为 提议 / 已采纳 / 已复评（YYYY-MM-DD）/ 已取代（→ 记录编号）/ 已撤销（YYYY-MM-DD）")
+                continue
+            m_close = STATUS_REVIEWED.fullmatch(status) or STATUS_WITHDRAWN.fullmatch(status)
+            if closed and m_close and date.fromisoformat(m_close.group(1)) < when:
+                errors.append(f"ERROR {where}: 状态日期（{m_close.group(1)}）早于本记录的复评日期（{when.isoformat()}），像是复制旧记录未重置状态；提前复评的，把复评日期改为复评当天")
+                continue
+            m_rep = re.fullmatch(rf"已取代[（(]\s*→\s*({RECORD_ID})\s*[）)]", status)
+            if m_rep:
+                replaced_refs.append((where, m_rep.group(1)))
             if when <= today and not closed:
-                due.append(f"DUE   {where}（复评日期 {when.isoformat()}）")
+                line = f"DUE   {where}（复评日期 {when.isoformat()}）"
+                if OUTCOME.match(outcome):
+                    line += "；实际结果已填写，状态须改为 已复评（YYYY-MM-DD）"
+                due.append(line)
         if stray:
             errors.append(f"ERROR {rel}: 含 Verdict 但未解析出记录（{stray} 个 Verdict 字段行不在任何记录内）")
         elif not found and "Verdict" in text:
             errors.append(f"ERROR {rel}: 含 Verdict 但未解析出记录（需要标题行与 \"- Verdict：\" 字段行）")
         elif not found and re.search(r"复评日期[^\n]{0,8}[：:]", text):
             errors.append(f"ERROR {rel}: 有复评日期但没有 \"- Verdict：\" 字段行，未解析出记录")
+    for where, target in replaced_refs:
+        if target not in archive_ids:
+            errors.append(f"ERROR {where}: 已取代指向的记录编号在归档中不存在（{target}）")
     return due, errors, len(paths)
 
 
