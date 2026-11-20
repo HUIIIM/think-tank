@@ -91,8 +91,8 @@ region() {  # region <文件> <起始正则> <结束正则>：去掉行尾 \r �
 }
 # 名称|文件（相对仓库根）|起始正则|结束正则|期望指纹
 PINS=(
-  "SKILL.md 治理铁律＋第 -2/-0.5/-1 步|SKILL.md|^## 治理铁律|^### 第 -0.5b 步|e65d646a7ced74cd5a0dcb6b1e68db223871d52395f9d8eb2cf24f2ebeba63e9"
-  "SKILL.md 第 5 步终裁稿规则|SKILL.md|^### 第 5 步|^\*\*一句话终裁格式|2a7158aae38f9d0423bb9dbc59cb419a77bc139ae855c38fee4d9980544e8673"
+  "SKILL.md 治理铁律＋第 -2/-0.5/-1 步|SKILL.md|^## 治理铁律|^### 第 -0.5b 步|22ef90ba812607bb25433b05f44d07ad41e3e43176385f046f7e595e0d5a9c84"
+  "SKILL.md 第 5 步终裁稿规则|SKILL.md|^### 第 5 步|^\*\*一句话终裁格式|09a8f866010f6c9f41d29e283d92ed9f63661a6f9b437f456728b7a5e40df89d"
   "SKILL.md 输出契约|SKILL.md|^## 输出契约|^## 不适用清单|83d4a6f157d7a34c0969c6c146b662dc63567eb2ae0a3c0a65262432e164b424"
   "references/three-teams.md 不得代裁四条|references/three-teams.md|^## 不得代裁四条|^## 意外视角|055bebd5d4fd1f6dc7e5e6067f8ae2acece8ba508d030910b021da03347cd375"
   "evals/smoke-02.md|evals/smoke-02.md|||1941ce3d4361020164a8ae72f185d53d3e04fdac944e93c28f29d0ef5453a921"
