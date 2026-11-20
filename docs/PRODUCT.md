@@ -1,10 +1,10 @@
 # think-tank（智囊团辩证决策）— 产品一页纸
 
-> 状态：active · 版本：1.0.5（`SKILL.md` frontmatter `metadata.version`；尚无 git tag）· 更新：2026-10-30
+> 状态：active · 版本：1.0.6（`SKILL.md` frontmatter `metadata.version`；尚无 git tag）· 更新：2026-11-20
 > 所属：[vertciti](https://vertciti.com) — 一家公司，一个人生。
 
 ## 一句话
-决策负责人（首要是 Miao 本人或其运营 agent）用它把一个**真实待决策事项**交给红/蓝/白三队加意外视角做结构化多轮辩论，得到总协调裁决书、CEO 终裁（接/改/驳）和一份可回溯的 编号决策记录。
+决策负责人（首要是 Miao 本人或其运营 agent）用它把一个**真实待决策事项**交给红/蓝/白三队加意外视角做结构化多轮辩论，得到总协调裁决书、CEO 终裁稿（接/改/驳）和一份可回溯的 编号决策记录。CEO＝J.A.R.V.I.S.（中枢，董事长常设授权下的终裁者）：运营 agent 等执行会话只出终裁稿，终裁以中枢发字为准（`SKILL.md` 治理铁律）。
 
 *English:* A Claude skill that runs a real pending decision through a structured red/blue/white-team debate (plus an outside view) and outputs a coordinator's ruling, a CEO verdict (accept / revise / reject) and a D-numbered decision record.
 
@@ -19,7 +19,7 @@
 ## 怎么用（三步）
 1. 准备输入：决策陈述 + 背景材料（必须是真实待决策事项）；在 Claude 中说"上智囊团"触发 skill。
 2. skill 按 `SKILL.md` 工作流执行：门禁 0 / 致命缺陷预检 → 开场定义 → 张力网络 → ≥2 轮辩证（含一句话压缩与 ASCII 框架图）→ 总协调裁决书。
-3. 决策负责人做 CEO 终裁，存档 编号决策记录（模板见 `references/decision-record-template.md`）。
+3. 执行会话写出终裁稿，由 CEO（中枢 J.A.R.V.I.S.）发字终裁，存档 编号决策记录（模板见 `references/decision-record-template.md`）。
 
 本地 30 秒体验（只生成草稿骨架）：`python3 demo/run.py --topic "你的议题"`，再 `bash demo/eval.sh` 校验 PASS/FAIL。
 
