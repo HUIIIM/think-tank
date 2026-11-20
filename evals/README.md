@@ -3,7 +3,7 @@
 本目录存放 skill 的验收运行记录（dry-run，均标 [试运行]，不进正式决策日志）。
 
 
-> English summary: from 2026-11-20 an acceptance run counts only if (1) its criteria file was committed on its own before any run, (2) a transcript or session link is attached, and (3) each scenario runs at least 3 times and reports a pass rate. Runs that miss any rule are exploratory only. Existing records smoke-03 to smoke-15 are marked *source not auditable*; smoke-01 is self-graded; smoke-02 has no transcript. Record bodies are left unchanged because they are pinned by `demo/eval.sh`.
+> English summary: from 2026-11-20 an acceptance run counts only if (1) its criteria file was committed on its own before any run, (2) a transcript or session link is attached, and (3) each scenario runs at least 3 times and reports a pass rate. Runs that miss any rule are exploratory only. The criteria commit must be cited by the run record, and all runs of a scenario must use the same skill version, reported as k/n. Existing records smoke-01 to smoke-15 are marked *source not auditable* (smoke-01: self-graded, no independent grading, no transcript; smoke-02: no transcript, one run; smoke-03 to smoke-15: criteria not committed before the runs, no transcript, one run each). Record bodies are left unchanged because they are pinned by `demo/eval.sh`.
 
 ## 验收三规（中枢裁决 #30 第 5 项，执行单 #39；自 2026-11-20 起适用于所有新的验收运行）
 
