@@ -33,6 +33,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 - `demo/eval_selftest.py`：新增 8 种变异（删掉"前置关不过不是致命缺陷"；把证据标准、终裁稿规则、输出契约 -0.5b 出口改写；四份回归记录结论翻转）和 5 处删除（smoke-02/03/10/12/13，其中 smoke-02 旧版已能抓到）；在 #17 合并后的 eval.sh 上自测判红（漏抓 12/35），新版 35/35 判绿 / 8 new mutations + 5 deletions; red on the previous eval.sh (12/35 missed), green now (35/35).
 
 ### 评估依据 / Evidence
+- **来源标注**：smoke-03 至 smoke-14（以及同样情况的 smoke-01、02、15）的汇总处标注"来源不可审计"——标准文件未在运行前入库、无 transcript、每个输入只跑一次；记录保留原样（#39，中枢裁决 #30 第 5 项）。今后的验收按 `evals/README.md` 的验收三规执行 / these records are marked not auditable; new acceptance runs follow the three rules in evals/README.md.
 - #16（smoke-03 至 smoke-05 实测暴露的缺口）。
 - v1.0.5 验收运行 `evals/smoke-06.md` 至 `smoke-14.md`，均由只读 skill 的全新会话执行、另一会话按运行前写定的标准评分 / acceptance runs smoke-06 to smoke-14, fresh executors, independent grading against pre-written criteria:
   - 初稿（`0b0b384`）：smoke-06、07、09 PASS；smoke-08 FAIL（第 -1 步以 [推断] 前提判驳，并把口头/书面数字冲突当作不可信输入）。记录原样保留 / smoke-08 failed on the first draft; kept as is.

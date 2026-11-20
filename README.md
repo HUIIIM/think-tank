@@ -64,7 +64,9 @@ references/   three-team charter, decision-record template
 evals/        dry-run records: smoke-01 (full debate), smoke-02 (non-delegable gate), smoke-03 (gate precedence),
               smoke-04 (fatal-flaw rejection), smoke-05 (prompt injection in background material),
               smoke-06 to smoke-14 (v1.0.5 acceptance runs, incl. one recorded FAIL and its re-run),
-              smoke-15 (outcome-loop record fields)
+              smoke-15 (outcome-loop record fields); smoke-01 to smoke-15 are not auditable
+              (criteria not committed before the runs, no transcripts, one run each), see evals/README.md
+              for the acceptance rules that apply from now on
 docs/         product one-pager
 scripts/      validate_skill.py (Agent Skills spec check) + test_validate_skill.py (fixtures);
               review_due.py (decision records due for review) + test_review_due.py (fixtures)
