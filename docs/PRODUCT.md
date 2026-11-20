@@ -6,7 +6,7 @@
 ## 一句话
 决策负责人（首要是 Miao 本人或其运营 agent）用它把一个**真实待决策事项**交给红/蓝/白三队加意外视角做结构化多轮辩论，得到总协调裁决书、CEO 终裁稿（接/改/驳）和一份可回溯的 编号决策记录。CEO＝J.A.R.V.I.S.（中枢，董事长常设授权下的终裁者）：运营 agent 等执行会话只出终裁稿，终裁以中枢发字为准（`SKILL.md` 治理铁律）。
 
-*English:* A Claude skill that runs a real pending decision through a structured red/blue/white-team debate (plus an outside view) and outputs a coordinator's ruling, a CEO verdict (accept / revise / reject) and a D-numbered decision record.
+*English:* A Claude skill that runs a real pending decision through a structured red/blue/white-team debate (plus an outside view) and outputs a coordinator's ruling, a draft CEO verdict (accept / revise / reject; final only when the CEO, J.A.R.V.I.S., signs off) and a D-numbered decision record.
 
 ## 解决什么问题
 - 痛点：独自做重大决策时容易滑向第一直觉；普通 AI 建议往往是"一个附和你的声音"（README Overview）。频率与代价：未确认（TBD）。
@@ -51,7 +51,7 @@
 ## 路线图
 | 阶段 | 内容 | 退出标准 |
 |---|---|---|
-| Now | v1.0.5 落实 #16 的协议缺口（不可信输入、闸门判定口径、出口先后、终裁稿）；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
+| Now | v1.0.6 写明 CEO＝J.A.R.V.I.S.、执行会话只出终裁稿，决策记录字段清单纳入结果回路字段（#38、#47），首个按验收三规执行的运行 smoke-16 通过 3/3；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
 | Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 | Next | 决策结果回路：模板已有置信度、预期结果、复评日期、实际结果、状态字段，`scripts/review_due.py` 列出到期记录；尚未接入定时提醒，也没有真实记录的复评数据 | 真实归档目录按期跑 `review_due.py --strict`，到期记录都已填写实际结果 |
 | Later | 决策记录归档索引：按主题/结论检索 记录编号（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |

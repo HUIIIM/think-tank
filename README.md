@@ -31,7 +31,7 @@ Product one-pager: [docs/PRODUCT.md](docs/PRODUCT.md) · Changelog: [CHANGELOG.m
 | Tension network | Perspective roster (red / blue / white teams and an outside view) with stated positions |
 | Dialectic | Two or more rounds: arguments per perspective, one-line compression, the host's core dispute, an ASCII framework diagram, the next-level question |
 | Coordinator's ruling | Pyramid-structured recommendation: conclusion, consensus, real disagreements with rulings, red-team rebuttals, open items |
-| CEO verdict and decision record | D-numbered record: background, positions, recommendation, verdict, basis, review triggers |
+| CEO verdict and decision record | D-numbered record: background, positions, recommendation, verdict, basis, review triggers, confidence, expected outcome, review date, actual outcome, status |
 
 ```
 Input: decision statement + background material

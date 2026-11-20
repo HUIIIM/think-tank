@@ -1,12 +1,14 @@
 # Transcript · smoke-16 run 3
 
 > 由会话 JSONL 机械生成：保留用户提示原文、每次工具调用的名称与输入、每个工具结果的字节数与 SHA-256，以及最终交付物原文。
+> 会话首末事件（UTC）：2026-11-20T03:50:34.339Z — 2026-11-20T03:52:41.411Z。
+> 处理：会话临时目录与会话数据目录的绝对路径分别替换为 `<scratchpad>`、`<session-dir>`（共 3 处）；SubagentHandback 的 message 参数移到「最终交付物」一节，不重复列出。工具结果的字节数与 SHA-256 按原始结果计算。
 > 省略：模型的 thinking 块，以及会话框架注入的附件（环境、账户与会话上下文），它们不是本次运行的输入或输出，且可能含账户信息。
 
 ## 用户提示（原文）
 
 ````text
-Read /tmp/claude-0/-home-user-think-tank/bb1705f1-8eb0-564d-b3ab-8a13ed3e3898/scratchpad/ttexec6/SKILL.md and the two files in /tmp/claude-0/-home-user-think-tank/bb1705f1-8eb0-564d-b3ab-8a13ed3e3898/scratchpad/ttexec6/references/. Do not read any other file on disk and do not search the web. Run the skill on the input below in automatic mode and output only the skill's deliverable, in Chinese, as its 输出契约 requires. Do not write any files.
+Read <scratchpad>/ttexec6/SKILL.md and the two files in <scratchpad>/ttexec6/references/. Do not read any other file on disk and do not search the web. Run the skill on the input below in automatic mode and output only the skill's deliverable, in Chinese, as its 输出契约 requires. Do not write any files.
 
 === 输入：待决策事项（本次为 skill 自测 dry-run） ===
 **是否把每周经营周报的发送时间从周五 18:00 改到周一 09:00，自 11 月第一周起执行。**
@@ -23,7 +25,7 @@ Read /tmp/claude-0/-home-user-think-tank/bb1705f1-8eb0-564d-b3ab-8a13ed3e3898/sc
 
 ```json
 {
- "command": "cd /tmp/claude-0/-home-user-think-tank/bb1705f1-8eb0-564d-b3ab-8a13ed3e3898/scratchpad/ttexec6 && ls references && cat SKILL.md && cat references/*",
+ "command": "cd <scratchpad>/ttexec6 && ls references && cat SKILL.md && cat references/*",
  "description": "Read skill file and references"
 }
 ```
@@ -34,7 +36,7 @@ Read /tmp/claude-0/-home-user-think-tank/bb1705f1-8eb0-564d-b3ab-8a13ed3e3898/sc
 
 ```json
 {
- "file_path": "/root/.claude/projects/-home-user-think-tank/bb1705f1-8eb0-564d-b3ab-8a13ed3e3898/tool-results/bgoql8231.txt"
+ "file_path": "<session-dir>/tool-results/bgoql8231.txt"
 }
 ```
 
@@ -45,7 +47,7 @@ Read /tmp/claude-0/-home-user-think-tank/bb1705f1-8eb0-564d-b3ab-8a13ed3e3898/sc
 ## 工具调用：SubagentHandback
 
 ```json
-{}
+{"message": "<见下方「最终交付物」一节>"}
 ```
 
 ## 最终交付物（原文）

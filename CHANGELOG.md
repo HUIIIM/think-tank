@@ -22,7 +22,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 ### Changed
 - SKILL.md v1.0.6 / skill 1.0.6:
   - 治理铁律新增"CEO 是谁"：本 skill 中 CEO＝J.A.R.V.I.S.（中枢，董事长常设授权下的终裁者），执行会话只出终裁稿，终裁以中枢发字为准；`docs/PRODUCT.md` 同步收紧"运营 agent"口径（#38，中枢裁决见 #30 第 4 项）/ CEO defined as J.A.R.V.I.S.; execution sessions only draft the verdict.
-  - 决策记录字段清单（核心原则第 4 条与第 5 步）补齐置信度、预期结果、复评日期、实际结果、状态，与 `references/decision-record-template.md` 一致（#47）/ record field lists aligned with the template.
+  - 决策记录字段清单（核心原则第 4 条与第 5 步）补齐置信度、预期结果、复评日期、实际结果、状态，结果回路字段与 `references/decision-record-template.md` 一致（其余字段名与模板的差异是原有问题，未在本版对齐）（#47）/ record field lists aligned with the template.
   - `demo/eval.sh`：治理铁律区间与第 5 步区间的指纹按 #20 流程同步更新 / fingerprints updated for the two changed regions.
   - 验收：`evals/smoke-16.md`，首个按 #39 验收三规执行的运行——标准 `evals/criteria/smoke-16.md` 在被测提交之前单独入库，三次运行的 transcript 见 `evals/transcripts/`，通过率 3/3；标准外的问题（84% 口径相加、终裁类型写法、run2 缺独立初稿）记在记录中 / acceptance run smoke-16 under the #39 rules: criteria committed first, transcripts attached, 3/3.
 - SKILL.md v1.0.5，落实 #16 的七处协议缺口 / closes the seven protocol gaps in #16:
