@@ -36,11 +36,11 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "due today": ({"a.md": record("TT-1")}, [], 0, {"TT-1"}, set()),
     "due earlier": ({"a.md": record("TT-1", review="2026-11-01")}, [], 0, {"TT-1"}, set()),
     "not yet due": ({"a.md": record("TT-1", review="2026-12-01")}, [], 0, set(), set()),
-    "already reviewed": ({"a.md": record("TT-1", result="达到——周报更正 0 次", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "already reviewed": ({"a.md": record("TT-1", review="2026-11-20", result="达到——周报更正 0 次", status="已复评（2026-11-20）")}, [], 0, set(), set()),
     "pending with note": ({"a.md": record("TT-1", result="待复评（数据 12-02 到）")}, [], 0, {"TT-1"}, set()),
     "empty result": ({"a.md": record("TT-1", result="")}, [], 0, {"TT-1"}, set()),
-    "superseded": ({"a.md": record("TT-1", status="已取代（→ TT-9）")}, [], 0, set(), set()),
-    "withdrawn": ({"a.md": record("TT-1", status="已撤销（2026-11-20）")}, [], 0, set(), set()),
+    "superseded": ({"a.md": record("TT-1", status="已取代（→ TT-9）") + "\n" + record("TT-9", review="2099-01-01")}, [], 0, set(), set()),
+    "withdrawn": ({"a.md": record("TT-1", review="2026-11-20", status="已撤销（2026-11-20）")}, [], 0, set(), set()),
     "missing date": ({"a.md": record("TT-1", review=None)}, [], 0, set(), {"TT-1"}),
     "date with text": ({"a.md": record("TT-1", review="2026-11-30（4 期后）")}, [], 0, set(), {"TT-1"}),
     "placeholder date": ({"a.md": record("TT-1", review="<YYYY-MM-DD>")}, [], 0, set(), {"TT-1"}),
@@ -55,7 +55,7 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
         {"a.md": record("TT-1").replace("- Verdict：", "- **Verdict：**").replace("- 复评日期：", "- **复评日期**：")},
         [], 0, {"TT-1"}, set(),
     ),
-    "bold value": ({"a.md": record("TT-1", review="**2026-11-30**", status="**已取代（→ TT-9）**")}, [], 0, set(), set()),
+    "bold value": ({"a.md": record("TT-1", review="**2026-11-30**", status="**已取代（→ TT-9）**") + "\n" + record("TT-9", review="2099-01-01")}, [], 0, set(), set()),
     "code value": ({"a.md": record("TT-1", review="`2026-11-30`")}, [], 0, {"TT-1"}, set()),
     "level-1 heading": ({"a.md": record("TT-1").replace("## ", "# ", 1)}, [], 0, {"TT-1"}, set()),
     "level-3 heading": ({"a.md": record("TT-1").replace("## ", "### ", 1)}, [], 0, {"TT-1"}, set()),
@@ -168,9 +168,9 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "B3: result after a full-width space": ({"a.md": record("TT-1", result="\u3000待复评")}, [], 0, {"TT-1"}, set()),
     "B3: result 暂无": ({"a.md": record("TT-1", result="暂无")}, [], 0, {"TT-1"}, set()),
     "B3: result TBD": ({"a.md": record("TT-1", result="TBD")}, [], 0, {"TT-1"}, set()),
-    "B3: result 未达到 is reviewed": ({"a.md": record("TT-1", result="未达到——更正仍有 1 次", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "B3: result 部分达到 is reviewed": ({"a.md": record("TT-1", result="部分达到——TT-3", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "B3: bold reviewed result": ({"a.md": record("TT-1", result="**达到**——0 次更正", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "B3: result 未达到 is reviewed": ({"a.md": record("TT-1", review="2026-11-20", result="未达到——更正仍有 1 次", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "B3: result 部分达到 is reviewed": ({"a.md": record("TT-1", review="2026-11-20", result="部分达到——TT-3", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "B3: bold reviewed result": ({"a.md": record("TT-1", review="2026-11-20", result="**达到**——0 次更正", status="已复评（2026-11-20）")}, [], 0, set(), set()),
     "B4: status only in a sub-section": (
         {"a.md": record("TT-2").replace("- 状态：已采纳\n", "### 关联记录\n- TT-1：周报周五发\n- 状态：已取代（→ TT-2）\n")},
         [], 0, set(), {"TT-2"},
@@ -203,7 +203,7 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "boundary: question mark": ({"a.md": record("TT-1", result="达到？待核实")}, [], 0, {"TT-1"}, set()),
     "boundary: checkbox menu": ({"a.md": record("TT-1", result="[ ] 达到 [ ] 未达到 [ ] 部分达到")}, [], 0, {"TT-1"}, set()),
     "boundary: template placeholder": ({"a.md": record("TT-1", result="<达到 / 未达到 / 部分达到——证据>")}, [], 0, {"TT-1"}, set()),
-    "boundary: result 达到 alone": ({"a.md": record("TT-1", result="达到", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "boundary: result 达到 alone": ({"a.md": record("TT-1", review="2026-11-20", result="达到", status="已复评（2026-11-20）")}, [], 0, set(), set()),
     "boundary: 已取代旧流程 is not closed": ({"a.md": record("TT-1", status="已取代旧流程")}, [], 0, set(), {"TT-1"}),
     "boundary: 已撤销旧方案 is not closed": ({"a.md": record("TT-1", status="已撤销旧方案，改为本方案")}, [], 0, set(), {"TT-1"}),
     "boundary: 已取代 with arrow": ({"a.md": record("TT-1", status="已取代 → TT-9")}, [], 0, set(), {"TT-1"}),
@@ -262,27 +262,27 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "hedge: 已撤销——暂定": ({"a.md": record("TT-1", status="已撤销——暂定")}, [], 0, set(), {"TT-1"}),
     "hedge: 已取代（→ ?）": ({"a.md": record("TT-1", status="已取代（→ ?）")}, [], 0, set(), {"TT-1"}),
     "hedge: 已取代（→ xxx）": ({"a.md": record("TT-1", status="已取代（→ xxx）")}, [], 0, set(), {"TT-1"}),
-    "evidence with a query string": ({"a.md": record("TT-1", result="达到——https://bi.example/r?id=7", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "evidence with 期待 and 对待": ({"a.md": record("TT-1", result="达到——符合期待，对待客户方式不变", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence with a query string": ({"a.md": record("TT-1", review="2026-11-20", result="达到——https://bi.example/r?id=7", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence with 期待 and 对待": ({"a.md": record("TT-1", review="2026-11-20", result="达到——符合期待，对待客户方式不变", status="已复评（2026-11-20）")}, [], 0, set(), set()),
     # a whole record quoted under another one is a citation, not an archive entry: not read
     "quoted record under a good one is a citation": (
         {"a.md": record("TT-1", review="2099-01-01") + "### 引用\n> - Verdict：改\n> - 复评日期：2026-11-01\n"}, [], 0, set(), set()
     ),
     "hedge: 达到——数据未确认": ({"a.md": record("TT-1", result="达到——数据未确认")}, [], 0, {"TT-1"}, set()),
     "hedge: truncated 达到 或": ({"a.md": record("TT-1", result="达到 或")}, [], 0, {"TT-1"}, set()),
-    "evidence naming a Spending report": ({"a.md": record("TT-1", result="达到——见 Spending 报表", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "evidence naming TBDashboard": ({"a.md": record("TT-1", result="达到——见 TBDashboard 看板", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "evidence with a URL": ({"a.md": record("TT-1", result="达到——https://bi.example/r/1", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "evidence with a path": ({"a.md": record("TT-1", result="达到——打开率 41%，见 ops/weekly 看板", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "evidence with a rate": ({"a.md": record("TT-1", result="部分达到——周活 3 次/周", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "evidence with 等待": ({"a.md": record("TT-1", result="达到——客户等待时长下降 30%", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "evidence with 接待": ({"a.md": record("TT-1", result="未达到——接待量未变", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence naming a Spending report": ({"a.md": record("TT-1", review="2026-11-20", result="达到——见 Spending 报表", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence naming TBDashboard": ({"a.md": record("TT-1", review="2026-11-20", result="达到——见 TBDashboard 看板", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence with a URL": ({"a.md": record("TT-1", review="2026-11-20", result="达到——https://bi.example/r/1", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence with a path": ({"a.md": record("TT-1", review="2026-11-20", result="达到——打开率 41%，见 ops/weekly 看板", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence with a rate": ({"a.md": record("TT-1", review="2026-11-20", result="部分达到——周活 3 次/周", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence with 等待": ({"a.md": record("TT-1", review="2026-11-20", result="达到——客户等待时长下降 30%", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "evidence with 接待": ({"a.md": record("TT-1", review="2026-11-20", result="未达到——接待量未变", status="已复评（2026-11-20）")}, [], 0, set(), set()),
     "withdrawn with a slash in the note": ({"a.md": record("TT-1", status="已撤销——见 TT-5 / 会议纪要")}, [], 0, set(), {"TT-1"}),
     "hedged: 达到TBD without a space": ({"a.md": record("TT-1", result="达到——TBD")}, [], 0, {"TT-1"}, set()),
     "hedged: 已取代（→待定） without a space": ({"a.md": record("TT-1", status="已取代（→待定）")}, [], 0, set(), {"TT-1"}),
     "hedged: 达到，待补数据": ({"a.md": record("TT-1", result="达到，待补数据")}, [], 0, {"TT-1"}, set()),
     "review note in the record's own sub-section": (
-        {"a.md": record("TT-1", result="达到——0 次更正", status="已复评（2026-11-20）") + "### 复评记录\n\n- 原复评日期：2026-11-01，已按期复评。\n"}, [], 0, set(), set()
+        {"a.md": record("TT-1", review="2026-11-20", result="达到——0 次更正", status="已复评（2026-11-20）") + "### 复评记录\n\n- 原复评日期：2026-11-01，已按期复评。\n"}, [], 0, set(), set()
     ),
     "intro under the document title": ({"a.md": "# 决策记录\n\n> 复评日期：以下方字段为准。\n\n" + record("TT-1")}, [], 0, {"TT-1"}, set()),
     "nested broken record under a good one": (
@@ -295,10 +295,10 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "second record dated without a colon": (
         {"a.md": record("TT-2", review="2099-01-01") + "\n## TT-3\n- 结论：改\n- 复评日期 2026-01-01\n"}, [], 0, set(), {"a.md"}
     ),
-    "outcome with evidence": ({"a.md": record("TT-1", result="部分达到——见 TT-3 附件", status="已复评（2026-11-20）")}, [], 0, set(), set()),
-    "closed: 已复评 with half-width brackets": ({"a.md": record("TT-1", result="达到——0 次", status="已复评(2026-11-20)")}, [], 0, set(), set()),
-    "closed: bold 已复评": ({"a.md": record("TT-1", result="达到——0 次", status="**已复评（2026-11-20）**")}, [], 0, set(), set()),
-    "closed: 已取代 to a record ID": ({"a.md": record("TT-1", status="已取代（→ TT-20261102-01）")}, [], 0, set(), set()),
+    "outcome with evidence": ({"a.md": record("TT-1", review="2026-11-20", result="部分达到——见 TT-3 附件", status="已复评（2026-11-20）")}, [], 0, set(), set()),
+    "closed: 已复评 with half-width brackets": ({"a.md": record("TT-1", review="2026-11-20", result="达到——0 次", status="已复评(2026-11-20)")}, [], 0, set(), set()),
+    "closed: bold 已复评": ({"a.md": record("TT-1", review="2026-11-20", result="达到——0 次", status="**已复评（2026-11-20）**")}, [], 0, set(), set()),
+    "closed: 已取代 to a record ID": ({"a.md": record("TT-1", status="已取代（→ TT-20261102-01）") + "\n" + record("TT-20261102-01", review="2099-01-01")}, [], 0, set(), set()),
     "closed: 已复评 on today": ({"a.md": record("TT-1", result="达到——0 次", status="已复评（2026-11-30）")}, [], 0, set(), set()),
     "not closed: reviewed text without status": ({"a.md": record("TT-1", result="达到——0 次更正")}, [], 0, {"TT-1"}, set()),
     "error: 已复评 in the future": ({"a.md": record("TT-1", result="达到——0 次", status="已复评（2026-12-01）")}, [], 0, set(), {"TT-1"}),
@@ -310,7 +310,7 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "error: 已取代 without digits in the ID": ({"a.md": record("TT-1", status="已取代（→ TT-）")}, [], 0, set(), {"TT-1"}),
     "error: 已取代 with trailing text": ({"a.md": record("TT-1", status="已取代（→ TT-9）待确认")}, [], 0, set(), {"TT-1"}),
     "hedged result with closed status is the reviewer's call": (
-        {"a.md": record("TT-1", result="达到——等待验证", status="已复评（2026-11-20）")}, [], 0, set(), set()
+        {"a.md": record("TT-1", review="2026-11-20", result="达到——等待验证", status="已复评（2026-11-20）")}, [], 0, set(), set()
     ),
     "Verdict only in prose": ({"a.md": "## 说明\n\n本文件说明 Verdict 的写法。\n"}, [], 0, set(), {"a.md"}),
     "hash without space is not a heading": ({"a.md": "#TT-1\n- Verdict：改。\n- 复评日期：2026-11-30\n"}, [], 0, set(), {"a.md"}),
@@ -328,6 +328,24 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
     "strict with due": ({"a.md": record("TT-1")}, ["--strict"], 1, {"TT-1"}, set()),
     "strict with error": ({"a.md": record("TT-1", review=None)}, ["--strict"], 1, set(), {"TT-1"}),
     "strict clean": ({"a.md": record("TT-1", review="2027-01-01")}, ["--strict"], 0, set(), set()),
+    # issue #48 follow-ups (N1-N5): template copies and stale statuses stop passing as closed
+    "N1: menu copied into a reviewed record": (
+        {"a.md": record("TT-1", result="达到 / 未达到 / 部分达到——<证据或记录编号>", status="已复评（2026-11-30）")}, [], 0, set(), {"TT-1"}
+    ),
+    "N1: reviewed but evidence still 待补": (
+        {"a.md": record("TT-1", result="达到——证据待补", status="已复评（2026-11-30）")}, [], 0, set(), {"TT-1"}
+    ),
+    "N2: closing date before the review date": (
+        {"a.md": record("TT-1", result="达到——0 次", status="已复评（2026-11-20）")}, [], 0, set(), {"TT-1"}
+    ),
+    "N4: status 已关闭 is not a closing form": ({"a.md": record("TT-1", status="已关闭")}, [], 0, set(), {"TT-1"}),
+    "N4: status 已完成复评 is not a closing form": ({"a.md": record("TT-1", status="已完成复评")}, [], 0, set(), {"TT-1"}),
+    "N5: superseded by a record that is not in the archive": (
+        {"a.md": record("TT-1", status="已取代（→ TT-99）")}, [], 0, set(), {"TT-1"}
+    ),
+    "N5: superseded by a record that is in the archive": (
+        {"a.md": record("TT-1", status="已取代（→ TT-2）") + "\n" + record("TT-2", review="2099-01-01")}, [], 0, set(), set()
+    ),
 }
 
 
@@ -462,12 +480,21 @@ def main() -> int:
     ok = r.returncode == 2
     failures += not ok
     print(f"{'ok ' if ok else 'BAD'} missing directory -> {r.returncode}")
+    with tempfile.TemporaryDirectory() as tmp:
+        (Path(tmp) / "a.md").write_text(record("TT-1", result="达到——0 次更正") + "\n" + record("TT-2"), encoding="utf-8")
+        r = run(Path(tmp), [])
+    hint = "；实际结果已填写，状态须改为 已复评（YYYY-MM-DD）"
+    due_lines = [ln for ln in r.stdout.splitlines() if ln.startswith("DUE")]
+    ok = (len(due_lines) == 2 and any("TT-1" in ln and hint in ln for ln in due_lines)
+          and any("TT-2" in ln and hint not in ln for ln in due_lines))
+    failures += not ok
+    print(f"{'ok ' if ok else 'BAD'} N3: a due line hints only when the result is already filled -> {due_lines}")
     template = TEMPLATE.read_text(encoding="utf-8")
     for needle in ("- Verdict：", "- 复评日期：", "- 实际结果：待复评", "- 状态："):
         ok = needle in template
         failures += not ok
         print(f"{'ok ' if ok else 'BAD'} template has {needle!r}")
-    total = len(CASES) + 12
+    total = len(CASES) + 13
     print(f"{total - failures}/{total} review_due fixtures behaved as expected")
     return 1 if failures else 0
 
