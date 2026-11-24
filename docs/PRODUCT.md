@@ -39,7 +39,7 @@
 - 真实运行：`evals/smoke-01.md` —— 一次真实待决策事项的完整 dry-run 记录（议题："是否把 trust-rule 式 lasting allow 机制排进 10-18 开发计划"），自评结论 PASS（自评、单次，不作验收证据，见 `evals/README.md`），终裁"改"——2026-10-26 复核：该议题命中"不得代裁四条"第 1 条，本不应进辩论，PASS 只证明流程可跑；demo 草稿在本地生成到 `demo/output/decision-draft.md`（git 忽略，不入库）。
 - 首个按验收三规（#39）执行的运行：`evals/smoke-16.md`——标准运行前单独入库、附三次 transcript、通过率 3/3（v1.0.6 的 CEO 定义与结果回路字段）。
 - 不能证明的：辩论质量与决策质量的提升没有量化评估；smoke-01 为单次自测、由执行者自评；没有运行录屏/截图。
-- 双语：`README.zh.md` 是 README 的中文全文版，`SKILL.zh.md` 是 `SKILL.md` 的中文全文版（`SKILL.md` 本身即为中文，正文逐字相同）；CI 中 `scripts/check_parity.py` 校验两对文件同步：SKILL 正文逐字比对；README 只比结构（标题、表格行、代码块、列表项、行内代码与链接目标），正文里某句话改了查不出，译文须人工同步。夹具见 `scripts/test_check_parity.py`。
+- 双语：`README.zh.md` 是 README 的中文全文版，`SKILL.zh.md` 是 `SKILL.md` 的中文全文版（`SKILL.md` 本身即为中文，正文逐字相同）；CI 中 `scripts/check_parity.py` 校验两对文件同步：SKILL 正文逐字比对；README 只比结构（标题、表格行与单元格、代码块、列表项、段落、行内代码与链接目标），段落内某句话改了查不出，译文须人工同步。夹具见 `scripts/test_check_parity.py`。
 
 ## 边界与风险
 - 合并流程：改动经 PR 合入。每个 PR 的当前 head 由隔离评估会话判 PASS 后，经 Claude 通道以 HUIIIM 身份合并；写 PR 的会话不合并自己的 PR。必过检查对管理员同样生效，见上文"测试"。

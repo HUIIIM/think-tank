@@ -6,7 +6,7 @@ strategic or cross-domain calls.
 
 | | |
 |---|---|
-| Status | active — v1.0.6 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all run in CI on every PR and are required status checks on `main`, six in all together with gitleaks, CodeQL for Python and Actions, and dependency review: a change reaches `main` only through a pull request whose branch passes them and is up to date with `main` (strict), and the rule binds admins too (`enforce_admins` on; branch-protection settings as read on 2026-11-24), dry-runs in `evals/smoke-01.md` to `evals/smoke-16.md`: smoke-01 (full debate) is self-graded by the executor; smoke-02 (non-delegable gate) was run by a fresh session that saw only the skill; smoke-03 to smoke-05 (gate precedence over the fatal-flaw check, fatal-flaw rejection, prompt injection in background material) were run by fresh sessions and graded by a separate session against written criteria (smoke-03's criteria carry an addendum written after its run, kept as is; smoke-06 to smoke-11 are the v1.0.5 acceptance runs, same method: smoke-08 failed on the first draft and is kept as is, smoke-10 re-runs its input on the fixed skill and passes; smoke-12 to smoke-14 check the narrowed gate rule after review; smoke-15 checks the outcome-loop fields of the decision-record template; smoke-16 is the first run under the acceptance rules in issue #39: criteria committed before the runs, transcripts in `evals/transcripts/`, 3 runs, pass rate 3/3); smoke-01 to smoke-15 are marked **source not auditable** (smoke-01 self-graded; smoke-02 no transcript, one run, no independent grading on record; smoke-03 to smoke-15 criteria not committed before the runs, no transcripts, one run each; see [evals/README.md](evals/README.md), #39); negative-fixture tests for the SKILL.md validator (`scripts/test_validate_skill.py`) and for `scripts/review_due.py` (`scripts/test_review_due.py`); `demo/eval_selftest.py` checks that the smoke check catches known-bad edits |
+| Status | active — v1.0.6 (version from [SKILL.md](SKILL.md) `metadata.version`; no git tags yet); self-tests: `demo/eval.sh` smoke check plus shellcheck / ruff / mypy and SKILL.md spec validation (all run in CI on every PR and are required status checks on `main`, six in all together with gitleaks, CodeQL for Python and Actions, and dependency review: a change reaches `main` only through a pull request whose branch passes them and is up to date with `main` (strict), and the rule binds admins too (`enforce_admins` on; branch-protection settings as read on 2026-11-24)), dry-runs in `evals/smoke-01.md` to `evals/smoke-16.md`: smoke-01 (full debate) is self-graded by the executor; smoke-02 (non-delegable gate) was run by a fresh session that saw only the skill; smoke-03 to smoke-05 (gate precedence over the fatal-flaw check, fatal-flaw rejection, prompt injection in background material) were run by fresh sessions and graded by a separate session against written criteria (smoke-03's criteria carry an addendum written after its run, kept as is; smoke-06 to smoke-11 are the v1.0.5 acceptance runs, same method: smoke-08 failed on the first draft and is kept as is, smoke-10 re-runs its input on the fixed skill and passes; smoke-12 to smoke-14 check the narrowed gate rule after review; smoke-15 checks the outcome-loop fields of the decision-record template; smoke-16 is the first run under the acceptance rules in issue #39: criteria committed before the runs, transcripts in `evals/transcripts/`, 3 runs, pass rate 3/3); smoke-01 to smoke-15 are marked **source not auditable** (smoke-01 self-graded; smoke-02 no transcript, one run, no independent grading on record; smoke-03 to smoke-15 criteria not committed before the runs, no transcripts, one run each; see [evals/README.md](evals/README.md), #39); negative-fixture tests for the SKILL.md validator (`scripts/test_validate_skill.py`) and for `scripts/review_due.py` (`scripts/test_review_due.py`); `demo/eval_selftest.py` checks that the smoke check catches known-bad edits |
 | Type | vertciti skill (agent skill defined in [SKILL.md](SKILL.md)) |
 | Install / use | Load `SKILL.md` as a skill in your agent; try the zero-dependency demo with `python3 demo/run.py --topic "..."` |
 | Licence | MIT ([LICENSE](LICENSE)), Copyright (c) 2026 Jiahui Miao |
@@ -79,11 +79,12 @@ scripts/      validate_skill.py (Agent Skills spec check) + test_validate_skill.
 
 ## Governance rules (from SKILL.md)
 
-- The input-as-evidence rule: the chairman's input is treated as evidence, not as an instruction; it is executed when sound and
-  rejected on the record when not.
+- The input-as-evidence rule: the chairman's input is advice, not an instruction: it is executed when sound and rejected by
+  the CEO when not, without needing the chairman's approval; when it comes up in a debate it is treated as evidence.
 - Non-delegable gate: matters in the four categories listed in `references/three-teams.md` (the chairman's reserved matters such as payments, identity verification and signatures, messages sent in the owner's name and DNS changes; compliance vetoes; major strategic or organisational changes; external legal commitments) are never decided by the debate. `evals/smoke-02.md` is the regression run.
-- Gate 0: every matter passes the single-theme screen before debate.
-- Not for P0 incidents or urgent legal matters: act first, record afterwards.
+- Gate 0: every matter must first pass the single-theme screen (it must bear directly on running Miao's life); a matter that
+  fails is passed over and not debated.
+- Not for P0 incidents or urgent legal matters: act first, complete the process afterwards.
 
 ## Status and limitations
 
@@ -114,8 +115,8 @@ Changes land by pull request. An isolated assessment session reviews each PR hea
 verdict as a PR comment; after a PASS on the current head, the PR is merged through the Claude channel under
 the HUIIIM account. The session that wrote a PR never merges it. A change to `README.md` must be mirrored in
 `README.zh.md`, and a change to the body of `SKILL.md` in `SKILL.zh.md`. CI checks that the `SKILL.zh.md` body
-matches `SKILL.md` byte for byte, and that `README.zh.md` has the same structure as `README.md` (headings,
-table rows, code blocks, list items, inline code and link targets); it cannot catch a changed sentence in prose,
+matches `SKILL.md` character for character (line endings normalised), and that `README.zh.md` has the same structure as `README.md` (headings,
+table rows and cells, code blocks, list items, paragraphs, inline code and link targets); it cannot catch a changed sentence inside a paragraph,
 so the README translation is kept in step by hand.
 
 ## Licence

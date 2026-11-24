@@ -91,6 +91,9 @@ CASES: dict[str, tuple[Edit, int, str]] = {
     "README inline code changed in Chinese": (replace("README.zh.md", "`demo/eval_selftest.py`", "`demo/eval_self.py`"), 1, "行内代码"),
     "README link target changed in Chinese": (replace("README.zh.md", "[LICENSE](LICENSE)", "[LICENSE](LICENCE)"), 1, "链接目标"),
     "README in-page anchor differs (ignored)": (replace("README.zh.md", "(#安全)", "(#安全与报告)"), 0, "通过"),
+    "README paragraph dropped in Chinese": (replace("README.zh.md", "产品一页纸：[docs/PRODUCT.md](docs/PRODUCT.md) · 变更日志：[CHANGELOG.md](CHANGELOG.md)\n\n", ""), 1, "段落数"),
+    "README paragraph split in Chinese": (replace("README.zh.md", "输出是一份存档的决策记录", "\n输出是一份存档的决策记录"), 1, "段落数"),
+    "README table cell dropped in Chinese": (replace("README.zh.md", "| 类型 | vertciti skill（agent skill，定义见 [SKILL.md](SKILL.md)） |", "| 类型 vertciti skill（agent skill，定义见 [SKILL.md](SKILL.md)） |"), 1, "单元格数"),
     "README.zh.md missing": (remove("README.zh.md"), 1, "无法读取"),
     "SKILL.zh.md missing": (remove("SKILL.zh.md"), 1, "无法读取"),
 }
