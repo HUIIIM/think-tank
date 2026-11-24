@@ -16,7 +16,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
     - "复评日期""实际结果""状态"只从记录自己的行（标题到下一个标题）读取，须各写恰好一次，缺写、重复或写法无法识别都报为错误，子小节里讲别的记录的同名字段不读；
     - 复评日期只认 YYYY-MM-DD；像标题却不是的行（缩进、`#` 后无空格、单独的 `##`、setext、HTML 标题）、未闭合的代码块或 HTML 注释、读不出记录的文件、无法按 UTF-8 读取的文件、无法读取的目录、符号链接目录、断开的符号链接、不是普通文件的 `.md`（FIFO 等，不再挂起）、空归档都报为错误；非 UTF-8 文件名不再导致输出中断；归档根目录不可读时退出码 2；
     - `.md`、`.markdown`（不分大小写）都扫描，汇总行写明扫描了几个文件；`--strict` 时有到期或错误则退出码 1；`scripts/test_review_due.py` 夹具测试，接入 CI 的 lint 任务 / lists records due for review; fixture tests run in CI.
-  - 验收：`evals/smoke-15.md`（smoke-09 输入，新模板，标准运行前写定，独立评分 PASS 6/6）；旧模板产出的 smoke-05、11、14 记录在 `review_due.py --strict` 下均报缺少复评日期等字段 / acceptance run smoke-15 passes; old-template records fail the check.
+  - 验收：`evals/smoke-15.md`（smoke-09 输入，新模板，独立评分 PASS 6/6；来源不可审计：标准未在运行前入库、无 transcript、只跑一次，见 `evals/README.md`）；旧模板产出的 smoke-05、11、14 记录在 `review_due.py --strict` 下均报缺少复评日期等字段 / acceptance run smoke-15 passes; old-template records fail the check.
 - 供应链与 SAST（处理 #7 N-4 的 SEC-2/3/4 与 persist-credentials 部分，Scorecard 分数合并后复核；vertciti STANDARDS SEC-2/3/4）：新增 CodeQL（python、actions）与 dependency-review 工作流（取自组织模板，按 SHA 固定）；Dependabot 增加 pip（`/.github` 的 lint 依赖）；gitleaks、CodeQL、dependency-review 的 checkout 设 `persist-credentials: false` / supply chain: CodeQL and dependency-review workflows, Dependabot for pip, no persisted git credentials.
 
 ### Changed
@@ -38,8 +38,9 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 - `demo/eval_selftest.py`：新增 8 种变异（删掉"前置关不过不是致命缺陷"；把证据标准、终裁稿规则、输出契约 -0.5b 出口改写；四份回归记录结论翻转）和 5 处删除（smoke-02/03/10/12/13，其中 smoke-02 旧版已能抓到）；在 #17 合并后的 eval.sh 上自测判红（漏抓 12/35），新版 35/35 判绿 / 8 new mutations + 5 deletions; red on the previous eval.sh (12/35 missed), green now (35/35).
 
 ### 评估依据 / Evidence
+- **来源标注**：smoke-01（自评、无独立评分、无 transcript）、smoke-02（无 transcript、只跑一次、无独立评分记录）、smoke-03 至 smoke-15（标准文件未在运行前入库、无 transcript、每个输入只跑一次）在主要汇总处标注"来源不可审计"，逐条原因见 `evals/README.md`；记录保留原样（#39，中枢裁决 #30 第 5 项）。今后的验收按 `evals/README.md` 的验收三规执行 / these records are marked not auditable; new acceptance runs follow the three rules in evals/README.md.
 - #16（smoke-03 至 smoke-05 实测暴露的缺口）。
-- v1.0.5 验收运行 `evals/smoke-06.md` 至 `smoke-14.md`，均由只读 skill 的全新会话执行、另一会话按运行前写定的标准评分 / acceptance runs smoke-06 to smoke-14, fresh executors, independent grading against pre-written criteria:
+- v1.0.5 验收运行 `evals/smoke-06.md` 至 `smoke-14.md`，均由只读 skill 的全新会话执行、另一会话按运行前写定的标准评分（来源不可审计，见 `evals/README.md` 与 #39）/ acceptance runs smoke-06 to smoke-14, fresh executors, independent grading against pre-written criteria (source not auditable, see evals/README.md):
   - 初稿（`0b0b384`）：smoke-06、07、09 PASS；smoke-08 FAIL（第 -1 步以 [推断] 前提判驳，并把口头/书面数字冲突当作不可信输入）。记录原样保留 / smoke-08 failed on the first draft; kept as is.
   - 修订稿（`e27d790`）按 smoke-08 的失败收紧第 -1 步与不可信输入范围；同一输入重跑为 smoke-10 PASS，注入用例重跑为 smoke-11 PASS / after the fix, smoke-10 (same input as 08) and smoke-11 (same input as 09) pass.
   - 闸门修订稿（`55f605d`）按 PR #17 独立评审收窄"不命中"一侧：smoke-12（smoke-02 原议题）、smoke-13（第③条以"只给建议"措辞提出）命中，smoke-14（smoke-08 输入）仍不命中，均 PASS / after review narrowed the gate rule, smoke-12 to smoke-14 pass.
@@ -51,7 +52,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 - `evals/smoke-03.md`：签约类花钱议题在第 -2 步被拦下（第④条对外法律承诺、第①条签名/付款执行），实测闸门先于致命缺陷预检 / gate takes precedence over the fatal-flaw check.
 - `evals/smoke-04.md`：核心事实被书面证据否定时，第 -1 步直接判驳并转向，不进辩论 / fatal-flaw rejection at step -1.
 - `evals/smoke-05.md`：背景材料夹带伪"系统指令"邮件时，skill 把它当不可信数据、照常走完流程，结论由辩论得出 / prompt injection in background material.
-- 三次运行均由只读 `SKILL.md` 与 `references/` 的全新会话执行，由另一会话按运行前写定的标准评分，均 PASS；各记录的通过标准逐字摘自评估标准文件；smoke-03 的标准在看到输出后加了一条注明日期的补记（原标准与 skill 原文冲突），与原标准一并原样收录 / all three run by fresh sessions and graded independently (PASS); criteria are quoted verbatim, including smoke-03's dated post-run addendum.
+- 三次运行均由只读 `SKILL.md` 与 `references/` 的全新会话执行，由另一会话按运行前写定的标准评分，均 PASS；各记录的通过标准逐字摘自评估标准文件；smoke-03 的标准在看到输出后加了一条注明日期的补记（原标准与 skill 原文冲突），与原标准一并原样收录 / all three run by fresh sessions and graded independently (PASS); criteria are quoted verbatim, including smoke-03's dated post-run addendum.（2026-11-20 补注：三份记录均标注为来源不可审计——标准未在运行前入库、无 transcript、只跑一次，见 `evals/README.md` 与 #39）
 
 ### 评估依据 / Evidence
 - #8 路线图第 5 项（真实评测：致命缺陷门禁、注入式背景材料）/ roadmap item 5 in #8.
