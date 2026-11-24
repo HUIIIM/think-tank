@@ -14,4 +14,4 @@ bash demo/eval.sh  # 输出 PASS/FAIL；写临时目录，不改仓库文件
 
 ## 诚实边界
 本 demo 只验证"议题→草稿骨架"链路可运行；真实辩论质量不在 30 秒 demo 范围内，
-以 `evals/smoke-01.md` 的完整 dry-run 为准。
+以 `evals/smoke-01.md` 的完整 dry-run 为准（该记录为自评、单次，来源不可审计，见 `evals/README.md`）。

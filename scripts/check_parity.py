@@ -5,8 +5,15 @@
   everything after the marker line in SKILL.zh.md must equal SKILL.md after its YAML
   frontmatter, byte for byte. A change to one file without the other fails.
 - README.zh.md is the full Chinese translation of README.md. Its structure must match:
-  the same sequence of heading levels, the same number of table rows and the same number
-  of fenced code blocks, so a section added to one edition but not the other fails.
+  the same sequence of heading levels, the same number of table rows, fenced code blocks and
+  list items, and the same inline code spans and link targets (as multisets; in-page "#"
+  anchors and the README.md <-> README.zh.md cross-links are ignored), so a section, row,
+  bullet, path or link added to or dropped from one edition fails.
+
+Limits: a changed sentence in prose is not detected, so the README translation is kept in
+step by hand. Headings are ATX headings at column 0 ("#" to "######"); indented and setext
+headings are not counted. Any line whose first non-space character is "|" counts as a
+table row. Line endings are normalised by text-mode reading, so CRLF and LF compare equal.
 
 Usage: python3 scripts/check_parity.py [repo-root]. Exit status 1 on any mismatch.
 """
@@ -30,11 +37,18 @@ def skill_body(text: str) -> str | None:
     return None
 
 
-def structure(text: str) -> tuple[list[int], int, int]:
-    """Heading levels in order, table rows and fenced code blocks, outside fenced code."""
+CROSS = {"README.md", "README.zh.md"}
+
+
+def structure(text: str) -> tuple[list[int], int, int, int, list[str], list[str]]:
+    """Heading levels in order, table rows, fenced code blocks, list items, inline code spans
+    and link targets, all outside fenced code."""
     levels: list[int] = []
     rows = 0
     blocks = 0
+    items = 0
+    code: list[str] = []
+    links: list[str] = []
     fence = ""
     for line in text.split("\n"):
         m = FENCE.match(line)
@@ -46,12 +60,16 @@ def structure(text: str) -> tuple[list[int], int, int]:
             fence = m.group(1)
             blocks += 1
             continue
+        code += re.findall(r"`([^`]+)`", line)
+        links += [t for t in re.findall(r"\]\(([^)\s]+)\)", line) if not t.startswith("#") and t not in CROSS]
         h = re.match(r"^(#{1,6}) +\S", line)
         if h:
             levels.append(len(h.group(1)))
         elif line.lstrip().startswith("|"):
             rows += 1
-    return levels, rows, blocks
+        elif re.match(r"^\s*(?:[-*+]|\d+[.)]) +\S", line):
+            items += 1
+    return levels, rows, blocks, items, sorted(code), sorted(links)
 
 
 def check(root: Path) -> list[str]:
@@ -76,10 +94,15 @@ def check(root: Path) -> list[str]:
             n = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
             problems.append(f"SKILL.zh.md 正文与 SKILL.md 不一致（正文第 {n + 1} 行起）")
     en, zh = structure(readme), structure(readme_zh)
-    names = ("标题层级序列", "表格行数", "代码块数")
-    for name, x, y in zip(names, en, zh):
+    names = ("标题层级序列", "表格行数", "代码块数", "列表项数")
+    for name, x, y in zip(names, en[:4], zh[:4]):
         if x != y:
             problems.append(f"README.zh.md 与 README.md 的{name}不一致：{y} ≠ {x}")
+    for name, x, y in (("行内代码", en[4], zh[4]), ("链接目标", en[5], zh[5])):
+        only_en = sorted(set(x) - set(y)) + [v for v in set(x) & set(y) if x.count(v) > y.count(v)]
+        only_zh = sorted(set(y) - set(x)) + [v for v in set(x) & set(y) if y.count(v) > x.count(v)]
+        if only_en or only_zh:
+            problems.append(f"README.zh.md 与 README.md 的{name}不一致：仅英文版或英文版更多 {only_en}，仅中文版或中文版更多 {only_zh}")
     return problems
 
 
