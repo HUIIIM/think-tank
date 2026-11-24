@@ -9,6 +9,14 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 ## [Unreleased]
 
 ### Added
+- 双语全文对等版（#35，中枢裁决 #30）/ full bilingual editions:
+  - `README.zh.md`：README 的中文全文翻译，结构与 `README.md` 逐节对齐 / Chinese translation of the README, section for section.
+  - `SKILL.zh.md`：`SKILL.md` 的中文全文版。`SKILL.md` 本身即以中文写成，故正文逐字相同，frontmatter 只在 `SKILL.md` 维护 / full Chinese edition of SKILL.md (body identical, since SKILL.md is already in Chinese).
+  - `scripts/check_parity.py` 接入 CI：`SKILL.zh.md` 正文须与 `SKILL.md` 正文逐字相同，`README.zh.md` 的标题层级序列、表格行数、代码块数须与 `README.md` 一致；`scripts/test_check_parity.py` 含 18 个夹具外加对本仓自身的检查 / parity check in CI, with fixtures.
+- README / PRODUCT 表述如实化（#35）/ accuracy fixes:
+  - 必过检查：写明 PR 分支须与 main 同步（strict），且只对非管理员生效（enforcement 为 non_admins），管理员可绕过 / required checks are strict but enforced for non-admins only.
+  - 合并人：写明当前 head 经隔离评估判 PASS 后，经 Claude 通道以 HUIIIM 身份合并，写 PR 的会话不合并自己的 PR / who merges, as it actually happens.
+  - README 安全一节原写"本仓没有自己的 SECURITY.md"，与仓内已有 `SECURITY.md` 不符，已改；"Status and limitations"原写"只有一次 dry-run 评估"，改为现状 / two stale README statements corrected.
 - 决策结果回路（SOTA 路线图第 6 项）/ decision outcome loop (roadmap item 6):
   - `references/decision-record-template.md` 新增"置信度""预期结果""复评日期""实际结果""状态"五个字段，以及填写纪律第 6、7 条（复评时对照预期与置信度、被取代时改状态不删记录；真实记录不进本公开仓库）/ confidence, expected outcome, review date, actual outcome and status fields; real records stay out of this public repo.
   - `scripts/review_due.py`：列出归档目录中到期待复评的记录。判定一律"拿不准就提醒"：
