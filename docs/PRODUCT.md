@@ -1,12 +1,12 @@
 # think-tank（智囊团辩证决策）— 产品一页纸
 
-> 状态：active · 版本：1.0.5（`SKILL.md` frontmatter `metadata.version`；尚无 git tag）· 更新：2026-10-30
+> 状态：active · 版本：1.0.6（`SKILL.md` frontmatter `metadata.version`；尚无 git tag）· 更新：2026-11-20
 > 所属：[vertciti](https://vertciti.com) — 一家公司，一个人生。
 
 ## 一句话
-决策负责人（首要是 Miao 本人或其运营 agent）用它把一个**真实待决策事项**交给红/蓝/白三队加意外视角做结构化多轮辩论，得到总协调裁决书、CEO 终裁（接/改/驳）和一份可回溯的 编号决策记录。
+决策负责人（首要是 Miao 本人或其运营 agent）用它把一个**真实待决策事项**交给红/蓝/白三队加意外视角做结构化多轮辩论，得到总协调裁决书、CEO 终裁稿（接/改/驳）和一份可回溯的 编号决策记录。CEO＝J.A.R.V.I.S.（中枢，董事长常设授权下的终裁者）：运营 agent 等执行会话只出终裁稿，终裁以中枢发字为准（`SKILL.md` 治理铁律）。
 
-*English:* A Claude skill that runs a real pending decision through a structured red/blue/white-team debate (plus an outside view) and outputs a coordinator's ruling, a CEO verdict (accept / revise / reject) and a D-numbered decision record.
+*English:* A Claude skill that runs a real pending decision through a structured red/blue/white-team debate (plus an outside view) and outputs a coordinator's ruling, a draft CEO verdict (accept / revise / reject; final only when the CEO, J.A.R.V.I.S., signs off) and a D-numbered decision record.
 
 ## 解决什么问题
 - 痛点：独自做重大决策时容易滑向第一直觉；普通 AI 建议往往是"一个附和你的声音"（README Overview）。频率与代价：未确认（TBD）。
@@ -19,7 +19,7 @@
 ## 怎么用（三步）
 1. 准备输入：决策陈述 + 背景材料（必须是真实待决策事项）；在 Claude 中说"上智囊团"触发 skill。
 2. skill 按 `SKILL.md` 工作流执行：门禁 0 / 致命缺陷预检 → 开场定义 → 张力网络 → ≥2 轮辩证（含一句话压缩与 ASCII 框架图）→ 总协调裁决书。
-3. 决策负责人做 CEO 终裁，存档 编号决策记录（模板见 `references/decision-record-template.md`）。
+3. 执行会话写出终裁稿，由 CEO（中枢 J.A.R.V.I.S.）发字终裁，存档 编号决策记录（模板见 `references/decision-record-template.md`）。
 
 本地 30 秒体验（只生成草稿骨架）：`python3 demo/run.py --topic "你的议题"`，再 `bash demo/eval.sh` 校验 PASS/FAIL。
 
@@ -37,6 +37,7 @@
 ## 证据
 - 测试：SKILL.md 校验器有反例夹具测试（`scripts/test_validate_skill.py`）；demo 无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）连同 shellcheck、ruff、`mypy --strict`、SKILL.md 规范校验（`scripts/validate_skill.py`）及其反例夹具（`scripts/test_validate_skill.py`），由 CI `Eval` 工作流在每个 PR 和推到 main 的 push 上运行（`lint + typecheck`、`demo/eval.sh` 与 gitleaks 已是 main 的必过检查，管理员仍可绕过）；`evals/smoke-02.md` 是不得代裁闸门的反例回归（来源不可审计：无 transcript、只跑一次）；`evals/smoke-03.md`–`smoke-05.md` 分别实测闸门先于致命缺陷预检、第 -1 步致命缺陷直接判驳、背景材料中的提示注入，均由全新会话执行、另一会话评分，均 PASS（smoke-04、05 记录自述按运行前写定的标准评分；smoke-03 的标准在看到输出后加了补记，记录中原样保留）。`evals/smoke-06.md`–`smoke-14.md` 是 v1.0.5 的验收运行（同样方法）：初稿上 smoke-08 FAIL（第 -1 步以推断前提判驳），记录原样保留；修订后同一输入重跑为 smoke-10，PASS；smoke-12 至 14 验证评审后收窄的闸门口径（"排进计划""只给建议"等措辞仍命中，花钱命题仍不命中）；其余均 PASS。每个输入在每个修订稿上只跑一次，未跑 v1.0.4 对照。smoke-03 至 smoke-15 均标注为**来源不可审计**（标准文件未在运行前入库、无 transcript、只跑一次；中枢裁决 #30 第 5 项），今后的验收按 `evals/README.md` 的三规执行（标准文件运行前单独提交、附 transcript 或会话链接、每场景 ≥3 跑并报通过率）。SHA-256 指纹保护 SKILL.md 治理铁律到第 -1 步、第 5 步终裁稿规则与输出契约，three-teams.md 不得代裁四条，以及回归记录 smoke-02、03、10、12、13（只能发现区间内的改动，不能判断含义；其余 smoke 记录无指纹）；`demo/eval_selftest.py` 在 CI 里验证 eval 能抓到 28 种已知篡改与 5 处记录删除；另有 gitleaks 与 Scorecard 工作流。
 - 真实运行：`evals/smoke-01.md` —— 一次真实待决策事项的完整 dry-run 记录（议题："是否把 trust-rule 式 lasting allow 机制排进 10-18 开发计划"），自评结论 PASS（自评、单次，不作验收证据，见 `evals/README.md`），终裁"改"——2026-10-26 复核：该议题命中"不得代裁四条"第 1 条，本不应进辩论，PASS 只证明流程可跑；demo 草稿在本地生成到 `demo/output/decision-draft.md`（git 忽略，不入库）。
+- 首个按验收三规（#39）执行的运行：`evals/smoke-16.md`——标准运行前单独入库、附三次 transcript、通过率 3/3（v1.0.6 的 CEO 定义与结果回路字段）。
 - 不能证明的：辩论质量与决策质量的提升没有量化评估；smoke-01 为单次自测、由执行者自评；没有运行录屏/截图。
 
 ## 边界与风险
@@ -50,7 +51,7 @@
 ## 路线图
 | 阶段 | 内容 | 退出标准 |
 |---|---|---|
-| Now | v1.0.5 落实 #16 的协议缺口（不可信输入、闸门判定口径、出口先后、终裁稿）；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
+| Now | v1.0.6 写明 CEO＝J.A.R.V.I.S.、执行会话只出终裁稿，决策记录字段清单纳入结果回路字段（#38、#47），首个按验收三规执行的运行 smoke-16 通过 3/3；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
 | Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 | Next | 决策结果回路：模板已有置信度、预期结果、复评日期、实际结果、状态字段，`scripts/review_due.py` 列出到期记录；尚未接入定时提醒，也没有真实记录的复评数据 | 真实归档目录按期跑 `review_due.py --strict`，到期记录都已填写实际结果 |
 | Later | 决策记录归档索引：按主题/结论检索 记录编号（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
