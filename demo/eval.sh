@@ -82,7 +82,7 @@ nocr() { sed $'s/\r$//' "$1"; }
 first_step="$(nocr "$ROOT/SKILL.md" | sed -n '/^## 工作流/,/^## 输出契约/p' | grep -m1 '^### ')"
 case "$first_step" in "### 第 -2 步：不得代裁闸门（强制，先于一切步骤）") ;; *) echo "  工作流第一步不是不得代裁闸门：$first_step"; ok=0 ;; esac
 # 受保护文本的 SHA-256 指纹（PINS 表）：SKILL.md 治理铁律到第 -1 步（闸门、前置关出口、致命缺陷标准）、
-# 第 5 步终裁稿规则、输出契约；three-teams.md 不得代裁四条；闸门与出口修复的回归记录 evals/smoke-02/03/10/12/13（其余 smoke 记录无指纹）。
+# 第 3 步四指令、运行上限与触顶出口、第 5 步终裁稿规则、输出契约；three-teams.md 不得代裁四条；闸门与出口修复的回归记录 evals/smoke-02/03/10/12/13（其余 smoke 记录无指纹）。
 # 这只能发现这些区间内的"改动"，不能判断改动的含义：区间内任何改动都会 FAIL，
 # 必须在同一次提交里更新 PINS 表，评审时一眼可见。区间外的文字不检查——只能靠评审。
 sha() { if command -v sha256sum >/dev/null 2>&1; then sha256sum; else shasum -a 256; fi | cut -d' ' -f1; }
@@ -92,6 +92,7 @@ region() {  # region <文件> <起始正则> <结束正则>：去掉行尾 \r �
 # 名称|文件（相对仓库根）|起始正则|结束正则|期望指纹
 PINS=(
   "SKILL.md 治理铁律＋第 -2/-0.5/-1 步|SKILL.md|^## 治理铁律|^### 第 -0.5b 步|22ef90ba812607bb25433b05f44d07ad41e3e43176385f046f7e595e0d5a9c84"
+  "SKILL.md 第 3 步四指令、运行上限与触顶出口|SKILL.md|^\*\*四指令控节奏|^### 推理外化纪律|b8229a2dc1be96d6ceace0c911fa0ce931aff341e3748b33ca07026e7f2d021a"
   "SKILL.md 第 5 步终裁稿规则|SKILL.md|^### 第 5 步|^\*\*一句话终裁格式|09a8f866010f6c9f41d29e283d92ed9f63661a6f9b437f456728b7a5e40df89d"
   "SKILL.md 输出契约|SKILL.md|^## 输出契约|^## 不适用清单|83d4a6f157d7a34c0969c6c146b662dc63567eb2ae0a3c0a65262432e164b424"
   "references/three-teams.md 不得代裁四条|references/three-teams.md|^## 不得代裁四条|^## 意外视角|055bebd5d4fd1f6dc7e5e6067f8ae2acece8ba508d030910b021da03347cd375"

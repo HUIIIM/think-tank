@@ -5,7 +5,7 @@
 
 | | |
 |---|---|
-| 状态 | active —— v1.0.6（版本号取自 [SKILL.md](SKILL.md) 的 `metadata.version`；尚无 git tag）；自测：`demo/eval.sh` 冒烟检查，加 shellcheck / ruff / mypy 与 SKILL.md 规范校验（均在每个 PR 的 CI 中运行，并与 gitleaks、CodeQL（Python 与 Actions）、依赖审查一起，共 6 项，是 `main` 的必过检查：改动只能经 pull request 进入 `main`，PR 分支须通过这些检查并与 `main` 同步（strict），该规则对管理员同样生效（`enforce_admins` 已开启；分支保护设置按 2026-11-24 读取））；dry-run 记录为 `evals/smoke-01.md` 至 `evals/smoke-16.md`：smoke-01（完整辩论）由执行者自评；smoke-02（不得代裁闸门）由只看过 skill 的全新会话执行；smoke-03 至 smoke-05（闸门先于致命缺陷预检、致命缺陷判驳、背景材料中的提示注入）由全新会话执行，另一会话按书面标准评分（smoke-03 的标准带有运行后写的补记，原样保留；smoke-06 至 smoke-11 是 v1.0.5 的验收运行，方法相同：smoke-08 在初稿上 FAIL，原样保留，smoke-10 在修订后的 skill 上重跑同一输入并通过；smoke-12 至 smoke-14 验证评审后收窄的闸门口径；smoke-15 验证决策记录模板的结果回路字段；smoke-16 是首个按 issue #39 验收规则执行的运行：标准在运行前入库，transcript 见 `evals/transcripts/`，跑 3 次，通过率 3/3）；smoke-01 至 smoke-15 标注为**来源不可审计**（smoke-01 为自评；smoke-02 无 transcript、只跑一次、无独立评分记录；smoke-03 至 smoke-15 的标准未在运行前入库、无 transcript、各只跑一次；见 [evals/README.md](evals/README.md)，#39）；SKILL.md 校验器（`scripts/test_validate_skill.py`）与 `scripts/review_due.py`（`scripts/test_review_due.py`）有反例夹具测试；`demo/eval_selftest.py` 验证冒烟检查能抓到已知的错误改动 |
+| 状态 | active —— v1.0.7（版本号取自 [SKILL.md](SKILL.md) 的 `metadata.version`；尚无 git tag）；自测：`demo/eval.sh` 冒烟检查，加 shellcheck / ruff / mypy 与 SKILL.md 规范校验（均在每个 PR 的 CI 中运行，并与 gitleaks、CodeQL（Python 与 Actions）、依赖审查一起，共 6 项，是 `main` 的必过检查：改动只能经 pull request 进入 `main`，PR 分支须通过这些检查并与 `main` 同步（strict），该规则对管理员同样生效（`enforce_admins` 已开启；分支保护设置按 2026-11-24 读取））；dry-run 记录为 `evals/smoke-01.md` 至 `evals/smoke-17.md`：smoke-01（完整辩论）由执行者自评；smoke-02（不得代裁闸门）由只看过 skill 的全新会话执行；smoke-03 至 smoke-05（闸门先于致命缺陷预检、致命缺陷判驳、背景材料中的提示注入）由全新会话执行，另一会话按书面标准评分（smoke-03 的标准带有运行后写的补记，原样保留；smoke-06 至 smoke-11 是 v1.0.5 的验收运行，方法相同：smoke-08 在初稿上 FAIL，原样保留，smoke-10 在修订后的 skill 上重跑同一输入并通过；smoke-12 至 smoke-14 验证评审后收窄的闸门口径；smoke-15 验证决策记录模板的结果回路字段；smoke-16 是首个按 issue #39 验收规则执行的运行：标准在运行前入库，transcript 见 `evals/transcripts/`，跑 3 次，通过率 3/3；smoke-17 按同一规则验证 v1.0.7 的运行上限，3/3，但没有一次跑到轮次上限，触顶出口尚未测到）；smoke-01 至 smoke-15 标注为**来源不可审计**（smoke-01 为自评；smoke-02 无 transcript、只跑一次、无独立评分记录；smoke-03 至 smoke-15 的标准未在运行前入库、无 transcript、各只跑一次；见 [evals/README.md](evals/README.md)，#39）；SKILL.md 校验器（`scripts/test_validate_skill.py`）与 `scripts/review_due.py`（`scripts/test_review_due.py`）有反例夹具测试；`demo/eval_selftest.py` 验证冒烟检查能抓到已知的错误改动 |
 | 类型 | vertciti skill（agent skill，定义见 [SKILL.md](SKILL.md)） |
 | 安装 / 使用 | 在你的 agent 中把 `SKILL.md` 作为 skill 加载；零依赖 demo：`python3 demo/run.py --topic "..."` |
 | 许可 | MIT（[LICENSE](LICENSE)），Copyright (c) 2026 Jiahui Miao |
@@ -63,7 +63,7 @@ evals/        dry-run 记录：smoke-01（完整辩论）、smoke-02（不得代
               smoke-04（致命缺陷判驳）、smoke-05（背景材料中的提示注入），
               smoke-06 至 smoke-14（v1.0.5 验收运行，含一次记录在案的 FAIL 及其重跑），
               smoke-15（结果回路记录字段）、smoke-16（CEO 定义 + 结果回路，3/3，
-              标准在 evals/criteria/，transcript 在 evals/transcripts/）；smoke-01 至 smoke-15
+              标准在 evals/criteria/，transcript 在 evals/transcripts/）、smoke-17（运行上限，3/3）；smoke-01 至 smoke-15
               来源不可审计（各有原因，与今后适用的验收规则一起列在 evals/README.md）
 docs/         产品一页纸
 scripts/      validate_skill.py（Agent Skills 规范校验）+ test_validate_skill.py（夹具）；
@@ -81,7 +81,7 @@ scripts/      validate_skill.py（Agent Skills 规范校验）+ test_validate_sk
 
 ## 现状与局限
 
-- dry-run 记录在 `evals/`；其中只有 smoke-16 按 issue #39 的验收规则执行（标准先入库、附 transcript、跑 3 次）。辩论质量没有自动化度量。
+- dry-run 记录在 `evals/`；其中只有 smoke-16 和 smoke-17 按 issue #39 的验收规则执行（标准先入库、附 transcript、跑 3 次）。辩论质量没有自动化度量。
 - demo 输出是骨架，不是完整辩论。
 - skill 负责组织辩论；最终决定权属于决策负责人。
 
