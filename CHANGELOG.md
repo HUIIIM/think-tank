@@ -23,7 +23,7 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 - SKILL.md v1.0.7 / skill 1.0.7 (SOTA ARCH-4):
   - 第 3 步新增"运行上限（硬约束）"：辩证轮次 ≤ 4（每轮以 `### 第 N 轮` 开头）、总席位 ≤ 6、初稿每席 ≤ 500 字、辩证每段与主持人每轮小结 ≤ 400 字、全部交付物 ≤ 12000 字、工具调用 ≤ 10 次；上限对决策负责人的"多辩几轮"同样适用。新增"触顶出口"：停止辩证、进入第 4 步、未收敛分歧标「触顶未收敛」列入未决项、交 CEO 终裁直裁。替换原先未定义的"超时按自动升级规则" / hard run bounds and a defined exit when a bound is hit.
   - `demo/eval.sh` 新增该段指纹；`demo/eval_selftest.py` 新增 3 种变异（轮次放宽、触顶后继续辩、上限不约束决策负责人），自测 38/38 / new pinned region and 3 mutations.
-  - 验收：`evals/criteria/smoke-17.md` 与测量脚本先于本版单独提交（#39 验收三规）/ acceptance criteria committed before the runs.
+  - 验收：`evals/smoke-17.md`，按 #39 验收三规——标准与测量脚本 `evals/criteria/smoke-17*` 先于本版单独提交（162a8c2），三次运行的 transcript 见 `evals/transcripts/`，通过率 3/3；三次都在 2 轮内收敛，触顶出口未被实际触发；测量脚本漏认全角行动标签，run1 由评分会话手测 / acceptance run smoke-17, 3/3; the exit when a bound is hit was not exercised.
 - SKILL.md v1.0.6 / skill 1.0.6:
   - 治理铁律新增"CEO 是谁"：本 skill 中 CEO＝J.A.R.V.I.S.（中枢，董事长常设授权下的终裁者），执行会话只出终裁稿，终裁以中枢发字为准；`docs/PRODUCT.md` 同步收紧"运营 agent"口径（#38，中枢裁决见 #30 第 4 项）/ CEO defined as J.A.R.V.I.S.; execution sessions only draft the verdict.
   - 决策记录字段清单（核心原则第 4 条与第 5 步）补齐置信度、预期结果、复评日期、实际结果、状态，结果回路字段与 `references/decision-record-template.md` 一致（其余字段名与模板的差异是原有问题，未在本版对齐）（#47）/ record field lists aligned with the template.
