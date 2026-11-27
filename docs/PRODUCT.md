@@ -35,13 +35,15 @@
 （以上来自 `SKILL.md` "与通用 roundtable 的四点区别"，为设计意图描述，未做对比评测。）
 
 ## 证据
-- 测试：SKILL.md 校验器有反例夹具测试（`scripts/test_validate_skill.py`）；demo 无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）连同 shellcheck、ruff、`mypy --strict`、SKILL.md 规范校验（`scripts/validate_skill.py`）及其反例夹具（`scripts/test_validate_skill.py`），由 CI `Eval` 工作流在每个 PR 和推到 main 的 push 上运行（`lint + typecheck`、`demo/eval.sh` 与 gitleaks 已是 main 的必过检查，管理员仍可绕过）；`evals/smoke-02.md` 是不得代裁闸门的反例回归（来源不可审计：无 transcript、只跑一次）；`evals/smoke-03.md`–`smoke-05.md` 分别实测闸门先于致命缺陷预检、第 -1 步致命缺陷直接判驳、背景材料中的提示注入，均由全新会话执行、另一会话评分，均 PASS（smoke-04、05 记录自述按运行前写定的标准评分；smoke-03 的标准在看到输出后加了补记，记录中原样保留）。`evals/smoke-06.md`–`smoke-14.md` 是 v1.0.5 的验收运行（同样方法）：初稿上 smoke-08 FAIL（第 -1 步以推断前提判驳），记录原样保留；修订后同一输入重跑为 smoke-10，PASS；smoke-12 至 14 验证评审后收窄的闸门口径（"排进计划""只给建议"等措辞仍命中，花钱命题仍不命中）；其余均 PASS。每个输入在每个修订稿上只跑一次，未跑 v1.0.4 对照。smoke-03 至 smoke-15 均标注为**来源不可审计**（标准文件未在运行前入库、无 transcript、只跑一次；中枢裁决 #30 第 5 项），今后的验收按 `evals/README.md` 的三规执行（标准文件运行前单独提交、附 transcript 或会话链接、每场景 ≥3 跑并报通过率）。SHA-256 指纹保护 SKILL.md 治理铁律到第 -1 步、第 3 步四指令、运行上限与触顶出口、第 5 步终裁稿规则与输出契约，three-teams.md 不得代裁四条，以及回归记录 smoke-02、03、10、12、13（只能发现区间内的改动，不能判断含义；其余 smoke 记录无指纹）；`demo/eval_selftest.py` 在 CI 里验证 eval 能抓到 32 种已知篡改与 5 处记录删除；另有 gitleaks 与 Scorecard 工作流。
+- 测试：SKILL.md 校验器有反例夹具测试（`scripts/test_validate_skill.py`）；demo 无单元测试。`demo/eval.sh` 冒烟检查（按 `SKILL.md` 输出契约校验五节齐全，含换行注入用例）连同 shellcheck、ruff、`mypy --strict`、SKILL.md 规范校验（`scripts/validate_skill.py`）及其反例夹具（`scripts/test_validate_skill.py`），由 CI `Eval` 工作流在每个 PR 和推到 main 的 push 上运行（`lint + typecheck`、`demo/eval.sh` 与 gitleaks 已是 main 的必过检查，连同 CodeQL（Python 与 Actions）与依赖审查共 6 项：改动只能经 PR 进入 main，PR 分支须通过这些检查并与 main 同步（strict），对管理员同样生效（enforce_admins 已开启；分支保护设置按 2026-11-24 读取））；`evals/smoke-02.md` 是不得代裁闸门的反例回归（来源不可审计：无 transcript、只跑一次）；`evals/smoke-03.md`–`smoke-05.md` 分别实测闸门先于致命缺陷预检、第 -1 步致命缺陷直接判驳、背景材料中的提示注入，均由全新会话执行、另一会话评分，均 PASS（smoke-04、05 记录自述按运行前写定的标准评分；smoke-03 的标准在看到输出后加了补记，记录中原样保留）。`evals/smoke-06.md`–`smoke-14.md` 是 v1.0.5 的验收运行（同样方法）：初稿上 smoke-08 FAIL（第 -1 步以推断前提判驳），记录原样保留；修订后同一输入重跑为 smoke-10，PASS；smoke-12 至 14 验证评审后收窄的闸门口径（"排进计划""只给建议"等措辞仍命中，花钱命题仍不命中）；其余均 PASS。每个输入在每个修订稿上只跑一次，未跑 v1.0.4 对照。smoke-03 至 smoke-15 均标注为**来源不可审计**（标准文件未在运行前入库、无 transcript、只跑一次；中枢裁决 #30 第 5 项），今后的验收按 `evals/README.md` 的三规执行（标准文件运行前单独提交、附 transcript 或会话链接、每场景 ≥3 跑并报通过率）。SHA-256 指纹保护 SKILL.md 治理铁律到第 -1 步、第 3 步四指令、运行上限与触顶出口、第 5 步终裁稿规则与输出契约，three-teams.md 不得代裁四条，以及回归记录 smoke-02、03、10、12、13（只能发现区间内的改动，不能判断含义；其余 smoke 记录无指纹）；`demo/eval_selftest.py` 在 CI 里验证 eval 能抓到 32 种已知篡改与 5 处记录删除；另有 gitleaks 与 Scorecard 工作流。
 - 真实运行：`evals/smoke-01.md` —— 一次真实待决策事项的完整 dry-run 记录（议题："是否把 trust-rule 式 lasting allow 机制排进 10-18 开发计划"），自评结论 PASS（自评、单次，不作验收证据，见 `evals/README.md`），终裁"改"——2026-10-26 复核：该议题命中"不得代裁四条"第 1 条，本不应进辩论，PASS 只证明流程可跑；demo 草稿在本地生成到 `demo/output/decision-draft.md`（git 忽略，不入库）。
 - 首个按验收三规（#39）执行的运行：`evals/smoke-16.md`——标准运行前单独入库、附三次 transcript、通过率 3/3（v1.0.6 的 CEO 定义与结果回路字段）。
 - 运行上限（v1.0.7，SOTA ARCH-4）：`evals/smoke-17.md`——同样按验收三规，3/3；三次都在 2 轮内收敛，触顶出口未被实际触发，有待另测。
 - 不能证明的：辩论质量与决策质量的提升没有量化评估；smoke-01 为单次自测、由执行者自评；没有运行录屏/截图。
+- 双语：`README.zh.md` 是 README 的中文全文版，`SKILL.zh.md` 是 `SKILL.md` 的中文全文版（`SKILL.md` 本身即为中文，正文逐字相同）；CI 中 `scripts/check_parity.py` 校验两对文件同步：SKILL 正文逐字比对；README 只比结构（标题、表格行与单元格、代码块、列表项、段落、行内代码与链接目标），段落内某句话改了查不出，译文须人工同步。夹具见 `scripts/test_check_parity.py`。
 
 ## 边界与风险
+- 合并流程：改动经 PR 合入。每个 PR 的当前 head 由隔离评估会话判 PASS 后，经 Claude 通道以 HUIIIM 身份合并；写 PR 的会话不合并自己的 PR。必过检查对管理员同样生效，见上文"测试"。
 - 不做：P0 紧急事项、纯执行层事项、事实不清且无最低证据基线的议题（打回研究）、门禁 0 不过的议题。
 - 已知限制：skill 本体是提示词协议（`SKILL.md`），质量依赖执行它的模型；demo 只验证"议题→草稿骨架"链路，不代表真实辩论质量。
 - 安全与隐私：仓库代码不联网、不收集数据；`demo/run.py` 只在本地写 `demo/output/decision-draft.md`（git 忽略）。实际运行时决策材料进入所用 Claude 环境，其存储与可见范围取决于该环境，未确认（TBD）。安全问题上报见 README `## Security`。
@@ -52,7 +54,7 @@
 ## 路线图
 | 阶段 | 内容 | 退出标准 |
 |---|---|---|
-| Now | v1.0.7 写明运行上限（轮次 ≤ 4、席位 ≤ 6、单段与全文字数、工具调用 ≤ 10）与触顶出口（SOTA ARCH-4），验收见 smoke-17；v1.0.6 写明 CEO＝J.A.R.V.I.S.、执行会话只出终裁稿，决策记录字段清单纳入结果回路字段（#38、#47），首个按验收三规执行的运行 smoke-16 通过 3/3；可选：把必过检查扩展到管理员（当前 enforcement 为 non_admins） | 未确认（TBD） |
+| Now | v1.0.7 写明运行上限（轮次 ≤ 4、席位 ≤ 6、单段与全文字数、工具调用 ≤ 10）与触顶出口（SOTA ARCH-4），验收见 smoke-17；v1.0.6 写明 CEO＝J.A.R.V.I.S.、执行会话只出终裁稿，决策记录字段清单纳入结果回路字段（#38、#47），首个按验收三规执行的运行 smoke-16 通过 3/3 | 未确认（TBD） |
 | Next | 完整辩论 dry-run 测试工具，带 transcript 捕获（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
 | Next | 决策结果回路：模板已有置信度、预期结果、复评日期、实际结果、状态字段，`scripts/review_due.py` 列出到期记录；尚未接入定时提醒，也没有真实记录的复评数据 | 真实归档目录按期跑 `review_due.py --strict`，到期记录都已填写实际结果 |
 | Later | 决策记录归档索引：按主题/结论检索 记录编号（原 README Roadmap，`2d7bf80` 已删） | 未确认（TBD） |
