@@ -24,7 +24,7 @@ Mutation = Callable[[Path], None]
 # Fixture copies live in a directory named after the skill (the spec requires name == directory),
 # so the suite also runs from a clone or worktree with a different directory name.
 _m = re.search(
-    r"^name: *\"?([^\"\n]+)\"?$", (ROOT / "SKILL.md").read_text(encoding="utf-8"), re.M
+    r"^name: *\"?([^\"\n]+)\"?$", (ROOT / "SKILL.md").read_text(encoding="utf-8"), re.MULTILINE
 )
 SKILL_NAME = _m.group(1) if _m else ROOT.name
 
@@ -33,7 +33,7 @@ def sub_skill(pattern: str, repl: str) -> Mutation:
     def apply(root: Path) -> None:
         p = root / "SKILL.md"
         text, n = re.subn(
-            pattern, lambda _m: repl, p.read_text(encoding="utf-8"), count=1, flags=re.M
+            pattern, lambda _m: repl, p.read_text(encoding="utf-8"), count=1, flags=re.MULTILINE
         )
         if n != 1:
             raise RuntimeError(f"fixture pattern did not match: {pattern!r}")
@@ -221,9 +221,9 @@ def unquote_version(root: Path) -> None:
     """
     p = root / "SKILL.md"
     text = p.read_text(encoding="utf-8")
-    if re.search(r"""^  version: [^"'\n]+$""", text, flags=re.M):
+    if re.search(r"""^  version: [^"'\n]+$""", text, flags=re.MULTILINE):
         return
-    text, n = re.subn(r'^(  version: )"([^"\n]+)"$', r"\1\2", text, count=1, flags=re.M)
+    text, n = re.subn(r'^(  version: )"([^"\n]+)"$', r"\1\2", text, count=1, flags=re.MULTILINE)
     if n != 1:
         raise RuntimeError("metadata.version not found")
     p.write_text(text, encoding="utf-8")
@@ -231,7 +231,7 @@ def unquote_version(root: Path) -> None:
 
 def assert_unquoted(root: Path) -> None:
     line = re.search(
-        r"^  version: (.+)$", (root / "SKILL.md").read_text(encoding="utf-8"), re.M
+        r"^  version: (.+)$", (root / "SKILL.md").read_text(encoding="utf-8"), re.MULTILINE
     )
     if not line or line.group(1)[0] in "\"'":
         raise RuntimeError("unquote_version left metadata.version quoted")

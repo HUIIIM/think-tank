@@ -87,7 +87,7 @@ DELETIONS = ["evals/smoke-02.md", "evals/smoke-03.md", "evals/smoke-10.md", "eva
 
 
 def run_eval(tree: Path) -> int:
-    r = subprocess.run(["bash", str(tree / "demo" / "eval.sh")], capture_output=True, text=True, cwd="/")
+    r = subprocess.run(["bash", str(tree / "demo" / "eval.sh")], capture_output=True, check=False, text=True, cwd="/")
     return r.returncode
 
 

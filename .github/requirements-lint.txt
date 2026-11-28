@@ -1,16 +1,24 @@
 # Lint / typecheck tools for the Eval workflow (python 3.12, linux x86_64).
 # Installed with --require-hashes (SOTA SEC-A5). Regenerate hashes when bumping.
-shellcheck-py==0.10.0.1 \
-    --hash=sha256:c1c266f7f54cd286057c592ead3095f93d123acdcabf048879a7d8900c3aac7b
-ruff==0.6.9 \
-    --hash=sha256:a67267654edc23c97335586774790cde402fb6bbdb3c2314f1fc087dee320bfa
-mypy==1.11.2 \
-    --hash=sha256:6e7184632d89d677973a14d00ae4d03214c8bc301ceefcdaf5c474866814c987
-mypy-extensions==1.1.0 \
-    --hash=sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505
+# mypy 2.x adds ast-serialize, librt and pathspec as runtime dependencies; they are listed
+# here because the workflow installs with --no-deps.
+shellcheck-py==0.11.0.1 \
+    --hash=sha256:1b274df81de5b000ff78db433e7328b87e52e3c38481c60f8e488c3095beef05
+ruff==0.17.4 \
+    --hash=sha256:2cd025509b2e15721b426fc70fd946d71f43b3db3b08e946dfec2d696d911690
+mypy==2.4.1 \
+    --hash=sha256:a20ff6cd2af7a670c64f089bfa5fbcebe8ff3bf896c5e6ac7c9862c7960e4494
+mypy-extensions==1.2.0 \
+    --hash=sha256:993e7a20aa5671eb41a7132cf555af30062da99729601601b9a8382b11cae768
 typing-extensions==4.16.0 \
     --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
+ast-serialize==0.13.1 \
+    --hash=sha256:9f99786e0d62082a5b121b3437f3167562133711df22128de1e9886f57f0b226
+librt==0.17.0 \
+    --hash=sha256:afa8a6a1916f155e6f35c48d6cb547849af79e07060e36b6aaec1d1c63dc3c7e
+pathspec==1.1.1 \
+    --hash=sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189
 pyyaml==6.0.3 \
     --hash=sha256:ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc
-types-pyyaml==6.0.12.20250915 \
-    --hash=sha256:e7d4d9e064e89a3b3cae120b4990cd370874d2bf12fa5f46c97018dd5d3c9ab6
+types-pyyaml==6.0.12.20261103 \
+    --hash=sha256:444654c61f635dab82c092a511aa96a0ce31164810784b9a37314e3e56532ac8
