@@ -54,10 +54,10 @@ VERDICT = re.compile(FIELD.format(name="Verdict"))
 # A Verdict line the field pattern does not accept: other or no list marker, indentation,
 # lower case, a parenthesised note before the colon.
 LOOSE_VERDICT = re.compile(
-    r"^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?\**verdict\**[ \t]*(?:[（(][^）)\n]*[）)])?[ \t]*\**[：:]", re.I
+    r"^[ \t]*(?:(?:[-*+]|\d+[.)])[ \t]+)?\**verdict\**[ \t]*(?:[（(][^）)\n]*[）)])?[ \t]*\**[：:]", re.IGNORECASE
 )
 # Looks like a heading to a reader but is not one here.
-HEADING_LIKE = re.compile(r" {1,3}#{1,6}[ \t]|#{1,6}[^# \t]|#{1,6}$|#{7,}|[ \t]*＃|[ \t]*<h[1-6][ \t>]", re.I)
+HEADING_LIKE = re.compile(r" {1,3}#{1,6}[ \t]|#{1,6}[^# \t]|#{1,6}$|#{7,}|[ \t]*＃|[ \t]*<h[1-6][ \t>]", re.IGNORECASE)
 SETEXT = re.compile(r" {0,3}(=+|-+)[ \t]*")
 CHECKED = ("复评日期", "实际结果", "状态")
 # A line a reader would take for one of CHECKED that FIELD does not accept: a quote, table or
@@ -85,7 +85,7 @@ SUFFIXES = (".md", ".markdown")
 def status_value(section: str) -> str:
     """The 状态 value with emphasis and code marks removed and outer spaces trimmed; its
     brackets are kept, they are part of the closed forms."""
-    m = re.search(FIELD.format(name="状态"), section, re.M)
+    m = re.search(FIELD.format(name="状态"), section, re.MULTILINE)
     return re.sub(r"[*`]", "", m.group(1)).strip(" \t\u3000\xa0") if m else ""
 
 
@@ -111,12 +111,12 @@ def closing(status: str, today: date) -> tuple[bool, str | None]:
 def field(section: str, name: str) -> str | None:
     """The value of a field line: emphasis and code marks removed, quotes, brackets and spaces
     trimmed from both ends."""
-    m = re.search(FIELD.format(name=name), section, re.M)
+    m = re.search(FIELD.format(name=name), section, re.MULTILINE)
     return re.sub(r"[*`]", "", m.group(1)).strip(NOISE) if m else None
 
 
 def count(section: str, name: str) -> int:
-    return len(re.findall(FIELD.format(name=name), section, re.M))
+    return len(re.findall(FIELD.format(name=name), section, re.MULTILINE))
 
 
 def code_mask(lines: list[str]) -> tuple[list[bool], bool]:

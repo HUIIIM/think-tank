@@ -37,10 +37,13 @@ topic = " ".join(
 if not topic:
     sys.exit("--topic 不能为空")
 
+# timezone.utc rather than datetime.UTC: keeps the zero-dependency demo running on Python < 3.11
+now = datetime.now(timezone.utc)  # noqa: UP017
+
 draft = f"""# 决策记录草稿 [DEMO DRAFT·不进正式决策日志]
 
 - 议题：{topic}
-- 时间：{datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")}
+- 时间：{now.strftime("%Y-%m-%d %H:%M UTC")}
 - 流程：think-tank v{skill_version()}（demo 级：单轮骨架）
 
 ## 开场定义

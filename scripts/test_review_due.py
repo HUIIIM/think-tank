@@ -334,7 +334,7 @@ CASES: dict[str, tuple[dict[str, str], list[str], int, set[str], set[str]]] = {
 def run(archive: Path, extra: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(SCRIPT), str(archive), "--today", TODAY, *extra],
-        capture_output=True, text=True, encoding="utf-8",
+        capture_output=True, check=False, text=True, encoding="utf-8",
     )
 
 
@@ -349,7 +349,7 @@ def run_unprivileged(archive: Path, extra: list[str]) -> subprocess.CompletedPro
         prefix = [setpriv, "--reuid=65534", "--regid=65534", "--clear-groups"]
     return subprocess.run(
         [*prefix, sys.executable, str(SCRIPT), str(archive), "--today", TODAY, *extra],
-        capture_output=True, text=True, encoding="utf-8",
+        capture_output=True, check=False, text=True, encoding="utf-8",
     )
 
 
@@ -376,7 +376,7 @@ def main() -> int:
                 p = Path(tmp) / rel
                 p.parent.mkdir(parents=True, exist_ok=True)
                 raw = text.encode("utf-8")
-                p.write_bytes(raw.replace("\xff".encode("utf-8"), b"\xff"))  # "\xff" stands for a non-UTF-8 byte
+                p.write_bytes(raw.replace("\xff".encode(), b"\xff"))  # "\xff" stands for a non-UTF-8 byte
             r = run(Path(tmp), extra)
         got = (r.returncode, ids(r.stdout, "DUE"), ids(r.stdout, "ERROR"))
         ok = got == (code, due, errors)
@@ -395,7 +395,7 @@ def main() -> int:
         os.mkfifo(Path(tmp) / "pipe.md")
         (Path(tmp) / "b.md").write_text(record("TT-1"), encoding="utf-8")
         try:
-            r = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", TODAY], capture_output=True, text=True, timeout=20)
+            r = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", TODAY], capture_output=True, check=False, text=True, timeout=20)
             got = (r.returncode, ids(r.stdout, "DUE"), ids(r.stdout, "ERROR"))
         except subprocess.TimeoutExpired:
             got = (-1, set(), {"hung"})
@@ -408,7 +408,7 @@ def main() -> int:
             f.write(record("TT-1").encode("utf-8"))
         (Path(tmp) / "y.md").write_text(record("TT-2"), encoding="utf-8")
         strict_env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
-        byte_run = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", TODAY], capture_output=True, env=strict_env)
+        byte_run = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", TODAY], capture_output=True, check=False, env=strict_env)
     out = byte_run.stdout.decode("utf-8", "replace")
     ok = byte_run.returncode == 0 and out.count("DUE") == 2
     failures += not ok
@@ -453,7 +453,7 @@ def main() -> int:
         print(f"{'ok ' if ok else 'BAD'} unreadable archive root exits 2 -> {top.returncode}")
     with tempfile.TemporaryDirectory() as tmp:
         r = run(Path(tmp), [])
-        bad = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", "20261130"], capture_output=True, text=True)
+        bad = subprocess.run([sys.executable, str(SCRIPT), tmp, "--today", "20261130"], capture_output=True, check=False, text=True)
     ok = r.returncode == 0 and bad.returncode == 2  # r: an empty archive is an error, but not --strict
     failures += not ok
     print(f"{'ok ' if ok else 'BAD'} --today accepts only YYYY-MM-DD -> {bad.returncode}")

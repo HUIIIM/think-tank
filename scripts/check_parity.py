@@ -98,7 +98,7 @@ def check(root: Path) -> list[str]:
         problems.append("SKILL.zh.md 须恰有一行正文开始标记")
     else:
         zh_body = skill_zh.split(MARKER, 1)[1]
-        zh_body = zh_body[1:] if zh_body.startswith("\n") else zh_body
+        zh_body = zh_body.removeprefix("\n")
         if zh_body != body:
             a, b = body.split("\n"), zh_body.split("\n")
             n = next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))

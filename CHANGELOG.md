@@ -8,6 +8,11 @@ There are no git tags yet, so entries are grouped by merge date (`[Unreleased]` 
 
 ## [Unreleased]
 
+### Changed
+- lint 工具链解冻（SOTA 路线图第 5 项，#8 G11）/ lint toolchain unfrozen (roadmap item 5):
+  - `.github/requirements-lint.txt`：ruff 0.6.9 → 0.17.4，mypy 1.11.2 → 2.4.1，shellcheck-py 0.10.0.1 → 0.11.0.1，mypy-extensions 1.1.0 → 1.2.0，types-pyyaml 6.0.12.20250915 → 6.0.12.20261103；mypy 2.x 新增的运行时依赖 ast-serialize、librt、pathspec 一并按哈希固定（工作流用 `--no-deps` 安装）。哈希取自 Python 3.12 / Linux x86_64 wheel，本地已用 Python 3.12 按 `--require-hashes --no-deps` 安装并跑通 lint 作业全部步骤 / hash-pinned, verified with the CI install command on Python 3.12.
+  - 修掉新版 ruff 报出的 25 处：`re.M` 等别名改全称（FURB167）、`str.removeprefix`（FURB188）、多余的 `encode("utf-8")`（UP012）、`subprocess.run` 显式 `check=False`（PLW1510，这些调用本来就自行检查返回码）、带 shebang 的脚本加可执行位（EXE001）；`demo/run.py` 保留 `timezone.utc` 并注明原因（不用 3.11 才有的 `datetime.UTC`，零依赖 demo 仍可在 3.11 以下运行），行为不变 / 25 findings fixed without behaviour change.
+
 ### Added
 - 双语全文对等版（#35，中枢裁决 #30）/ full bilingual editions:
   - `README.zh.md`：README 的中文全文翻译，结构与 `README.md` 逐节对齐 / Chinese translation of the README, section for section.

@@ -100,7 +100,7 @@ CASES: dict[str, tuple[Edit, int, str]] = {
 
 
 def run(root: Path) -> tuple[int, str]:
-    r = subprocess.run([sys.executable, str(SCRIPT), str(root)], capture_output=True, text=True)
+    r = subprocess.run([sys.executable, str(SCRIPT), str(root)], capture_output=True, check=False, text=True)
     return r.returncode, r.stdout
 
 
